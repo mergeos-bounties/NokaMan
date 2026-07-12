@@ -1,96 +1,135 @@
 # NokaMan
 
-**NokaMan** is a training and inference toolkit for **language-learning ability assessment**:
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Version](https://img.shields.io/badge/version-0.2.1-0E8A16.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![MergeOS](https://img.shields.io/badge/MergeOS-bounties-5319E7.svg)](https://github.com/mergeos-bounties)
+
+**NokaMan** assesses **language-learning ability** across multiple skills and languages — CEFR-style bands, rubrics, JSON reports for embedding in learning apps.
+
+Product: [mergeos-bounties/NokaMan](https://github.com/mergeos-bounties/NokaMan)
+
+---
+
+## Table of contents
+
+- [Highlights](#highlights)
+- [Screenshots](#screenshots)
+- [Quick start](#quick-start)
+- [CLI reference](#cli-reference)
+- [Languages & rubrics](#languages--rubrics)
+- [Architecture](#architecture)
+- [Development](#development)
+- [MergeOS bounties](#mergeos-bounties)
+- [License](#license)
+
+---
+
+## Highlights
 
 | Mode | Description |
 | --- | --- |
-| **Skill scoring** | Vocabulary, grammar, reading, writing, listening, speaking proxies |
-| **CEFR-style band** | Map multi-skill scores → levels (A1–C2 scaffold) |
-| **Multi-language** | English, Korean, Japanese, Vietnamese, Chinese (+ extend) |
-| **App integration** | JSON report for embedding into language-learning products |
+| **Multi-skill eval** | Vocabulary, grammar, reading, writing, listening, speaking proxies |
+| **CEFR-style bands** | Map scores → A1–C2 style levels (scaffold) |
+| **Multi-language** | EN, KO, JA, VI, ZH (+ extend via rubrics) |
+| **JSON reports** | Save under `OUT_DIR` for app integration |
+| **Offline demo** | `nokaman demo --lang en` end-to-end |
 
-Built under [mergeos-bounties](https://github.com/mergeos-bounties) so delivery can be funded as MergeOS tasks with MRG payouts.
-
+---
 
 ## Screenshots
 
-Real captures from running the product demo (NokaMan).
+| Evaluation demo | Languages |
+| :---: | :---: |
+| ![Eval EN](docs/screenshots/demo-eval-en.png) | ![Languages](docs/screenshots/demo-languages.png) |
+| *English multi-skill demo* | *Supported languages registry* |
 
-![English multi-skill evaluation demo](docs/screenshots/demo-eval-en.png)
-
-*English multi-skill evaluation demo*
-
-![Supported languages](docs/screenshots/demo-languages.png)
-
-*Supported languages*
-
-## Stack
-
-- Python 3.11+
-- CLI: `typer` + `rich`
-- Rubric-driven toy assessor (offline, no LLM required)
-- Optional LLM / torch / FastAPI extras via bounties
+---
 
 ## Quick start
 
-```bash
+```powershell
 cd NokaMan
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
+.\.venv\Scripts\activate
 pip install -e ".[dev]"
-nokaman --help
-```
 
-## Commands (runnable)
-
-```bash
 nokaman version
-nokaman demo --lang en                 # multi-skill report + save JSON
 nokaman languages list
-nokaman eval text --lang en --file data/samples/en_writing_b1.json
-nokaman eval text --lang ko --text "안녕하세요. 저는 학생입니다."
-nokaman eval batch --out data/runs/batch_eval.json
-nokaman eval placement --lang en -a "I study every day." -a "Hello!"
-nokaman train toy --epochs 3
+nokaman demo --lang en
+nokaman rubrics list
 ```
 
-## Layout
+---
 
+## CLI reference
+
+| Command | Purpose |
+| --- | --- |
+| `nokaman version` | Version + language codes |
+| `nokaman demo -l en` | Full multi-skill evaluation demo |
+| `nokaman languages list` | Supported languages + frameworks |
+| `nokaman rubrics list [-l en]` | Skill rubrics |
+| `nokaman eval text …` | Evaluate free text |
+| `nokaman train …` | Toy calibration |
+| `nokaman serve` | Optional FastAPI |
+
+```powershell
+nokaman demo -l vi
+nokaman demo -l ko
 ```
+
+---
+
+## Languages & rubrics
+
+Rubrics and samples live under `data/`. Extend by adding rubric JSON + samples, then register in `nokaman.rubrics.registry`.
+
+| Code | Typical use |
+| --- | --- |
+| `en` | English (default demo) |
+| `vi` | Vietnamese |
+| `ko` / `ja` / `zh` | East Asian tracks |
+
+---
+
+## Architecture
+
+```text
 src/nokaman/
   cli.py
-  config.py
-  data/             # loaders for samples + rubrics
-  models/           # toy ability model + CEFR mapping
-  eval/             # scoring pipelines
-  rubrics/          # skill rubrics per language
-  train/            # calibration stubs
-  integrations/     # app SDK sketch
-  api/              # optional FastAPI
-data/samples/       # learner response fixtures
-data/rubrics/       # CEFR-ish skill descriptors
-docs/BOUNTY.md
+  eval/           # pipeline, metrics, placement
+  rubrics/        # language metadata + skills
+  data/loader.py
+  train/toy_train.py
+docs/screenshots/
 ```
+
+---
+
+## Development
+
+```powershell
+pytest -q
+ruff check src tests
+nokaman demo -l en
+```
+
+---
 
 ## MergeOS bounties
 
-1. Star this repo + [mergeos](https://github.com/mergeos-bounties/mergeos)
-2. Claim an issue labeled `bounty`
-3. Also claim on MergeOS [issue #1](https://github.com/mergeos-bounties/mergeos/issues/1)
-4. Open a PR with tests/evidence to **this public repo**
-5. Maintainer merges and credits MRG (25/50/100/200)
+Star + claim bounty → PR to **master** with demo JSON / screenshots → MRG **25–200**.  
+See org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
 
-See [docs/BOUNTY.md](docs/BOUNTY.md).
+---
 
-## Privacy
+## Tiếng Việt
 
-- Prefer consented learner data and public corpora with clear licenses.
-- Do not ship private student PII without permission.
-- Document dataset licenses in every PR that adds data.
+**NokaMan** đánh giá năng lực học ngôn ngữ đa kỹ năng (EN/VI/…). Chạy: `nokaman demo -l en` hoặc `-l vi`.
+
+---
 
 ## License
 
-MIT
+MIT · MergeOS / ThanhTrucSolutions
