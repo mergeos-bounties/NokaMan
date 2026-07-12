@@ -1,1 +1,1 @@
-"""Optional FastAPI surface (bounty)."""
+"""Optional FastAPI app: `uvicorn nokaman.api.app:app`."""

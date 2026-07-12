@@ -164,5 +164,20 @@ def train_report() -> None:
     console.print(path.read_text(encoding="utf-8"))
 
 
+@app.command("serve")
+def serve_cmd(
+    host: str = typer.Option("127.0.0.1", "--host"),
+    port: int = typer.Option(8767, "--port", min=1, max=65535),
+) -> None:
+    """Run FastAPI (pip install -e '.[api]')."""
+    try:
+        import uvicorn
+    except ImportError as exc:
+        console.print('[red]Install:[/red] pip install -e ".[api]"')
+        raise typer.Exit(1) from exc
+    console.print(f"Serving http://{host}:{port}/health")
+    uvicorn.run("nokaman.api.app:app", host=host, port=port, log_level="info")
+
+
 if __name__ == "__main__":
     app()
