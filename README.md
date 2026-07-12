@@ -6,9 +6,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![MergeOS](https://img.shields.io/badge/MergeOS-bounties-5319E7.svg)](https://github.com/mergeos-bounties)
 
-**NokaMan** assesses **language-learning ability** across multiple skills and languages — CEFR-style bands, rubrics, JSON reports for embedding in learning apps.
+**NokaMan** assesses **language-learning ability** across multiple skills and languages — CEFR-style bands, rubrics, and JSON reports ready for learning apps.
 
-Product: [mergeos-bounties/NokaMan](https://github.com/mergeos-bounties/NokaMan)
+**Product:** [mergeos-bounties/NokaMan](https://github.com/mergeos-bounties/NokaMan)
 
 ---
 
@@ -21,7 +21,7 @@ Product: [mergeos-bounties/NokaMan](https://github.com/mergeos-bounties/NokaMan)
 - [CLI reference](#cli-reference)
 - [Languages & rubrics](#languages--rubrics)
 - [Diagrams](#diagrams)
-- [Architecture](#architecture)
+- [Repository layout](#repository-layout)
 - [Development](#development)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
@@ -43,7 +43,7 @@ Product: [mergeos-bounties/NokaMan](https://github.com/mergeos-bounties/NokaMan)
 
 ## Desktop GUI (Qt)
 
-Modern dark **PySide6** demo shell — full multi-skill demo, languages, evaluate text, samples, rubrics, train.
+Modern dark **PySide6** demo — multi-skill evaluation, languages, free-text scoring, samples, rubrics, toy calibration.
 
 ```powershell
 pip install -e ".[gui]"
@@ -85,6 +85,8 @@ nokaman-gui
 
 ## Screenshots
 
+CLI / terminal captures:
+
 | Evaluation demo | Languages |
 | :---: | :---: |
 | ![Eval EN](docs/screenshots/demo-eval-en.png) | ![Languages](docs/screenshots/demo-languages.png) |
@@ -104,7 +106,7 @@ nokaman version
 nokaman languages list
 nokaman demo --lang en
 nokaman rubrics list
-nokaman-gui          # Qt desktop demo
+nokaman-gui
 ```
 
 ---
@@ -142,18 +144,16 @@ Rubrics and samples live under `data/`. Extend by adding rubric JSON + samples, 
 
 ---
 
-
 ## Diagrams
 
-System architecture and workflow — shown full-width below.  
-Open the HTML files for **dark/light theme toggle** and export (PNG/SVG).
+System architecture and workflow — full width. Open the HTML files for **dark/light theme** and export (PNG/SVG).
 
 ### Architecture
 
 [Open interactive diagram](docs/diagrams/architecture.html)
 
 <p align="center">
-  <img src="docs/diagrams/architecture.svg" alt="Architecture diagram" width="100%" />
+  <img src="docs/diagrams/architecture.svg" alt="NokaMan architecture" width="100%" />
 </p>
 
 ### Workflow
@@ -161,12 +161,14 @@ Open the HTML files for **dark/light theme toggle** and export (PNG/SVG).
 [Open interactive diagram](docs/diagrams/workflow.html)
 
 <p align="center">
-  <img src="docs/diagrams/workflow.svg" alt="Workflow diagram" width="100%" />
+  <img src="docs/diagrams/workflow.svg" alt="NokaMan workflow" width="100%" />
 </p>
 
 *Generated with [archify](https://github.com/tt-a1i).*
 
-## Architecture
+---
+
+## Repository layout
 
 ```text
 src/nokaman/
@@ -177,6 +179,7 @@ src/nokaman/
   data/loader.py
   train/toy_train.py
 docs/screenshots/
+docs/diagrams/
 ```
 
 ---
@@ -201,7 +204,7 @@ See org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
 
 ## Tiếng Việt
 
-**NokaMan** đánh giá năng lực học ngôn ngữ đa kỹ năng (EN/VI/…). Chạy: `nokaman demo -l en` hoặc `-l vi`.
+**NokaMan** đánh giá năng lực học ngôn ngữ đa kỹ năng (EN/VI/…). Chạy: `nokaman demo -l en` hoặc `nokaman-gui`.
 
 ---
 
