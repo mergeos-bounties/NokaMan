@@ -164,6 +164,14 @@ def train_report() -> None:
     console.print(path.read_text(encoding="utf-8"))
 
 
+@app.command("gui")
+def gui_cmd() -> None:
+    """Launch modern Qt desktop demo (pip install -e '.[gui]')."""
+    from nokaman.gui.app import main as gui_main
+
+    raise SystemExit(gui_main())
+
+
 @app.command("serve")
 def serve_cmd(
     host: str = typer.Option("127.0.0.1", "--host"),

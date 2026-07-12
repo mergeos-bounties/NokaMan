@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nokaman"
-version = "0.2.1"
+version = "0.3.0"
 description = "NokaMan: multi-language learning ability assessment for language apps (EN/KO/JA and more)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -23,6 +23,9 @@ dev = [
   "pytest>=8.0",
   "ruff>=0.4",
 ]
+gui = [
+  "PySide6>=6.6",
+]
 torch = [
   "torch>=2.2",
 ]
@@ -40,6 +43,7 @@ llm = [
 
 [project.scripts]
 nokaman = "nokaman.cli:app"
+nokaman-gui = "nokaman.gui.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
