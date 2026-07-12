@@ -11,6 +11,19 @@
 
 Built under [mergeos-bounties](https://github.com/mergeos-bounties) so delivery can be funded as MergeOS tasks with MRG payouts.
 
+
+## Screenshots
+
+Real captures from running the product demo (NokaMan).
+
+![English multi-skill evaluation demo](docs/screenshots/demo-eval-en.png)
+
+*English multi-skill evaluation demo*
+
+![Supported languages](docs/screenshots/demo-languages.png)
+
+*Supported languages*
+
 ## Stack
 
 - Python 3.11+
