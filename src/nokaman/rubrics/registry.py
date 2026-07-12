@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from nokaman.config import RUBRICS_DIR
 from nokaman.data.loader import list_rubric_files, load_rubric
 

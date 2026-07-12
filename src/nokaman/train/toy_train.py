@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from nokaman.config import RUNS_DIR
 from nokaman.data.loader import list_sample_files, load_sample
