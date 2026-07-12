@@ -1,0 +1,38 @@
+{
+  "language": "zh",
+  "name": "Chinese",
+  "skills": {
+    "vocabulary": {
+      "weight": 1.0,
+      "notes": "Chinese vocabulary descriptor"
+    },
+    "grammar": {
+      "weight": 1.0,
+      "notes": "Chinese grammar descriptor"
+    },
+    "reading": {
+      "weight": 1.0,
+      "notes": "Chinese reading descriptor"
+    },
+    "writing": {
+      "weight": 1.2,
+      "notes": "Chinese writing descriptor"
+    },
+    "listening": {
+      "weight": 1.0,
+      "notes": "Chinese listening descriptor"
+    },
+    "speaking": {
+      "weight": 1.0,
+      "notes": "Chinese speaking descriptor"
+    }
+  },
+  "bands": [
+    "A1",
+    "A2",
+    "B1",
+    "B2",
+    "C1",
+    "C2"
+  ]
+}

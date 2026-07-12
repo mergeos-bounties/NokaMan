@@ -1,0 +1,38 @@
+{
+  "language": "ja",
+  "name": "Japanese",
+  "skills": {
+    "vocabulary": {
+      "weight": 1.0,
+      "notes": "Japanese vocabulary descriptor"
+    },
+    "grammar": {
+      "weight": 1.0,
+      "notes": "Japanese grammar descriptor"
+    },
+    "reading": {
+      "weight": 1.0,
+      "notes": "Japanese reading descriptor"
+    },
+    "writing": {
+      "weight": 1.2,
+      "notes": "Japanese writing descriptor"
+    },
+    "listening": {
+      "weight": 1.0,
+      "notes": "Japanese listening descriptor"
+    },
+    "speaking": {
+      "weight": 1.0,
+      "notes": "Japanese speaking descriptor"
+    }
+  },
+  "bands": [
+    "A1",
+    "A2",
+    "B1",
+    "B2",
+    "C1",
+    "C2"
+  ]
+}

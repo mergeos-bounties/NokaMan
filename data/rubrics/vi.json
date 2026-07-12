@@ -1,0 +1,38 @@
+{
+  "language": "vi",
+  "name": "Vietnamese",
+  "skills": {
+    "vocabulary": {
+      "weight": 1.0,
+      "notes": "Vietnamese vocabulary descriptor"
+    },
+    "grammar": {
+      "weight": 1.0,
+      "notes": "Vietnamese grammar descriptor"
+    },
+    "reading": {
+      "weight": 1.0,
+      "notes": "Vietnamese reading descriptor"
+    },
+    "writing": {
+      "weight": 1.2,
+      "notes": "Vietnamese writing descriptor"
+    },
+    "listening": {
+      "weight": 1.0,
+      "notes": "Vietnamese listening descriptor"
+    },
+    "speaking": {
+      "weight": 1.0,
+      "notes": "Vietnamese speaking descriptor"
+    }
+  },
+  "bands": [
+    "A1",
+    "A2",
+    "B1",
+    "B2",
+    "C1",
+    "C2"
+  ]
+}

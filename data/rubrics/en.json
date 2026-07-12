@@ -1,0 +1,38 @@
+{
+  "language": "en",
+  "name": "English",
+  "skills": {
+    "vocabulary": {
+      "weight": 1.0,
+      "notes": "English vocabulary descriptor"
+    },
+    "grammar": {
+      "weight": 1.0,
+      "notes": "English grammar descriptor"
+    },
+    "reading": {
+      "weight": 1.0,
+      "notes": "English reading descriptor"
+    },
+    "writing": {
+      "weight": 1.2,
+      "notes": "English writing descriptor"
+    },
+    "listening": {
+      "weight": 1.0,
+      "notes": "English listening descriptor"
+    },
+    "speaking": {
+      "weight": 1.0,
+      "notes": "English speaking descriptor"
+    }
+  },
+  "bands": [
+    "A1",
+    "A2",
+    "B1",
+    "B2",
+    "C1",
+    "C2"
+  ]
+}
