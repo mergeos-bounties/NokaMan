@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mergeos-bounties/NokaMan/schemas/assess_text_request.schema.json",
+  "title": "AssessTextRequest",
+  "description": "Request body accepted by POST /assess/text.",
+  "type": "object",
+  "properties": {
+    "language": {
+      "type": "string",
+      "default": "en",
+      "description": "Supported NokaMan language code such as en, vi, ko, ja, zh, es, fr, or de."
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Learner text to evaluate."
+    },
+    "skill": {
+      "type": "string",
+      "default": "writing",
+      "description": "Skill rubric to score, for example writing, reading, vocabulary, grammar, listening, or speaking."
+    }
+  },
+  "required": ["text"],
+  "additionalProperties": false
+}

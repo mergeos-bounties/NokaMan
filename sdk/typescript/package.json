@@ -1,0 +1,7 @@
+{
+  "name": "@mergeos-bounties/nokaman-contracts",
+  "version": "0.3.19",
+  "private": true,
+  "description": "TypeScript contracts for NokaMan assessment payloads.",
+  "types": "index.ts"
+}
