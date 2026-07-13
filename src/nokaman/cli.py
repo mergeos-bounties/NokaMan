@@ -36,6 +36,31 @@ def version_cmd() -> None:
     console.print(f"Languages: {', '.join(sorted(SUPPORTED_LANGUAGES))}")
 
 
+@app.command("stats")
+def stats_cmd() -> None:
+    """Sample inventory by language + skill."""
+    from collections import Counter
+
+    by_lang: Counter[str] = Counter()
+    by_skill: Counter[str] = Counter()
+    for path in list_sample_files():
+        stem = path.stem
+        parts = stem.split("_")
+        lang = parts[0] if parts else "?"
+        skill = parts[1] if len(parts) > 1 else "?"
+        by_lang[lang] += 1
+        by_skill[skill] += 1
+    console.print_json(
+        data={
+            "version": __version__,
+            "n_samples": len(list_sample_files()),
+            "by_lang": dict(by_lang),
+            "by_skill": dict(by_skill),
+            "languages_supported": sorted(SUPPORTED_LANGUAGES),
+        }
+    )
+
+
 @app.command("demo")
 def demo_cmd(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     """Full multi-skill demo for a language (end-to-end runnable)."""
