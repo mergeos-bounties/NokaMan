@@ -202,12 +202,6 @@ See org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
 
 ---
 
-## Tiếng Việt
-
-**NokaMan** đánh giá năng lực học ngôn ngữ đa kỹ năng (EN/VI/…). Chạy: `nokaman demo -l en` hoặc `nokaman-gui`.
-
----
-
 ## License
 
 MIT · MergeOS / ThanhTrucSolutions
