@@ -126,6 +126,7 @@ def eval_samples() -> None:
 @eval_app.command("batch")
 def eval_batch(
     out: Path | None = typer.Option(None, "--out", "-o"),
+    table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()
     out_path = out or (RUNS_DIR / "batch_eval.json")
@@ -135,7 +136,42 @@ def eval_batch(
         f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
         f"adjacent={report['adjacent_cefr_hit_rate']}"
     )
+    if table and report.get("by_language"):
+        t = Table(title="By language")
+        t.add_column("Lang")
+        t.add_column("n")
+        t.add_column("exact")
+        t.add_column("adjacent")
+        for lang, row in sorted((report.get("by_language") or {}).items()):
+            t.add_row(
+                str(lang),
+                str(row.get("n") or row.get("n_samples") or ""),
+                str(row.get("exact_cefr_hit_rate", row.get("exact", ""))),
+                str(row.get("adjacent_cefr_hit_rate", row.get("adjacent", ""))),
+            )
+        console.print(t)
     console.print(f"Report: {out_path}")
+
+
+@eval_app.command("summary")
+def eval_summary() -> None:
+    """Compact inventory of samples + batch metrics."""
+    files = list_sample_files()
+    by_lang: dict[str, int] = {}
+    for path in files:
+        stem = path.stem
+        lang = stem.split("_")[0] if "_" in stem else "?"
+        by_lang[lang] = by_lang.get(lang, 0) + 1
+    report = batch_evaluate()
+    console.print_json(
+        data={
+            "version": __version__,
+            "n_samples": len(files),
+            "by_lang_files": by_lang,
+            "exact_cefr_hit_rate": report.get("exact_cefr_hit_rate"),
+            "adjacent_cefr_hit_rate": report.get("adjacent_cefr_hit_rate"),
+        }
+    )
 
 
 @eval_app.command("placement")

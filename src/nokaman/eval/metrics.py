@@ -36,11 +36,35 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
             elif dist == 1:
                 adjacent += 1
         rows.append(row)
+    by_language: dict[str, dict] = {}
+    for row in rows:
+        lang = str(row.get("language") or "?")
+        bucket = by_language.setdefault(
+            lang, {"n": 0, "labeled": 0, "exact": 0, "adjacent": 0}
+        )
+        bucket["n"] += 1
+        if row.get("expected_cefr"):
+            bucket["labeled"] += 1
+            dist = row.get("distance")
+            if dist == 0:
+                bucket["exact"] += 1
+                bucket["adjacent"] += 1
+            elif dist == 1:
+                bucket["adjacent"] += 1
+    for lang, bucket in by_language.items():
+        lab = bucket["labeled"] or 0
+        bucket["exact_cefr_hit_rate"] = (
+            round(bucket["exact"] / lab, 4) if lab else None
+        )
+        bucket["adjacent_cefr_hit_rate"] = (
+            round(bucket["adjacent"] / lab, 4) if lab else None
+        )
     return {
         "n_samples": len(files),
         "n_labeled": labeled,
         "exact_cefr_hit_rate": round(exact / labeled, 4) if labeled else None,
         "adjacent_cefr_hit_rate": round(adjacent / labeled, 4) if labeled else None,
+        "by_language": by_language,
         "rows": rows,
     }
 
