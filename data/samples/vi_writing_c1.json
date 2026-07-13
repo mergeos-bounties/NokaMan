@@ -1,0 +1,7 @@
+{
+  "id": "vi_writing_c1",
+  "language": "vi",
+  "skill": "writing",
+  "expected_cefr": "C1",
+  "text": "Trong bối cảnh chuyển đổi số, tôi nhận thấy rằng việc đồng bộ quy trình kỹ thuật với quản trị sản phẩm không chỉ đòi hỏi kỹ năng lập trình vững mà còn cần khả năng diễn giải trade-off cho các bên liên quan. Khi triển khai hệ thống phân tán, nhóm tôi ưu tiên quan sát độ trễ và tính nhất quán dữ liệu trước khi mở rộng quy mô, đồng thời ghi chép quyết định kiến trúc để các kỹ sư mới có thể tái lập ngữ cảnh. Tôi lập luận rằng văn hóa review cởi mở, kết hợp số liệu vận hành, giúp giảm rủi ro phát hành và nâng cao chất lượng giao tiếp kỹ thuật bằng cả tiếng Việt lẫn tiếng Anh."
+}

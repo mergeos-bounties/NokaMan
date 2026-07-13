@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nokaman"
-version = "0.3.14"
+version = "0.3.15"
 description = "NokaMan: multi-language learning ability assessment for language apps (EN/KO/JA and more)"
 readme = "README.md"
 requires-python = ">=3.11"
