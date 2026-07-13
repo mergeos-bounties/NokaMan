@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mergeos-bounties/NokaMan/schemas/assess_text_response.schema.json",
+  "title": "AssessTextResponse",
+  "description": "Stable response payload returned by POST /assess/text and sdk.assess_for_app(..., multi_skill=false).",
+  "type": "object",
+  "properties": {
+    "language": { "type": "string" },
+    "language_name": { "type": "string" },
+    "frameworks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "skill": { "type": "string" },
+    "score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "cefr": { "$ref": "./common.schema.json#/$defs/cefrBand" },
+    "framework_bands": { "$ref": "./common.schema.json#/$defs/frameworkBands" },
+    "features": { "$ref": "./common.schema.json#/$defs/textFeatures" },
+    "model": { "type": "string" },
+    "integration_version": { "type": "string" },
+    "ready_for_ui": { "type": "boolean" }
+  },
+  "required": [
+    "language",
+    "language_name",
+    "frameworks",
+    "skill",
+    "score",
+    "cefr",
+    "framework_bands",
+    "features",
+    "model"
+  ],
+  "additionalProperties": false
+}

@@ -19,6 +19,7 @@
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
 - [CLI reference](#cli-reference)
+- [App integration contracts](#app-integration-contracts)
 - [Languages & rubrics](#languages--rubrics)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
@@ -128,6 +129,42 @@ nokaman-gui
 nokaman demo -l vi
 nokaman demo -l ko
 nokaman-gui
+```
+
+---
+
+## App integration contracts
+
+NokaMan publishes stable contracts for mobile and web apps under `schemas/` and `sdk/typescript/`.
+They mirror the real FastAPI and SDK payloads, so app teams can validate data and type responses without
+reverse-engineering demo output.
+
+| Contract | Runtime source |
+| --- | --- |
+| `schemas/assess_text_request.schema.json` | `POST /assess/text` request body |
+| `schemas/assess_text_response.schema.json` | `POST /assess/text` and `assess_for_app(..., multi_skill=false)` |
+| `schemas/demo_response.schema.json` | `GET /assess/demo/{lang}` and `demo_payload()` |
+| `sdk/typescript/index.ts` | TypeScript interfaces for request and response payloads |
+
+Example TypeScript use:
+
+```typescript
+import type { AssessTextRequest, AssessTextResponse } from "./sdk/typescript";
+
+const body: AssessTextRequest = {
+  language: "en",
+  text: "I practice English every morning.",
+  skill: "writing",
+};
+
+const response = await fetch("/assess/text", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+const assessment = (await response.json()) as AssessTextResponse;
+console.log(assessment.cefr, assessment.score, assessment.framework_bands);
 ```
 
 ---
