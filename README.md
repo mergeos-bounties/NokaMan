@@ -126,7 +126,7 @@ nokaman-gui
 | `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
 | `nokaman eval text …` | Evaluate free text |
 | `nokaman eval batch --out data/out/batch.json` | Score every sample and write a JSON CEFR hit-rate report |
-| `nokaman train …` | Toy calibration |
+| `nokaman train …` | Toy calibration with config/report exports |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
 | `nokaman serve` | Optional FastAPI |
 
@@ -134,6 +134,7 @@ nokaman-gui
 nokaman demo -l vi
 nokaman demo -l ko
 nokaman eval batch --out data/out/batch.json
+nokaman train toy --config configs/example.yaml
 nokaman-gui
 ```
 
