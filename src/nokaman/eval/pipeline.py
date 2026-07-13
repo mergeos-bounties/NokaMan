@@ -4,14 +4,20 @@ from pathlib import Path
 
 from nokaman.data.loader import load_sample
 from nokaman.models.cefr import compare_bands
+from nokaman.models.grader import AbilityGrader, build_grader
 from nokaman.models.toy import ToyAbilityModel
 from nokaman.rubrics.registry import get_language_meta
 
 
-def evaluate_text(language: str, text: str, skill: str = "writing") -> dict:
+def evaluate_text(
+    language: str,
+    text: str,
+    skill: str = "writing",
+    grader: AbilityGrader | None = None,
+) -> dict:
     meta = get_language_meta(language)
-    model = ToyAbilityModel(language=meta["code"])
-    result = model.score_text(text, skill=skill)
+    active_grader = grader or build_grader(language=meta["code"])
+    result = active_grader.score_text(text, skill=skill)
     result["language_name"] = meta["name"]
     result["frameworks"] = meta["frameworks"]
     return result
