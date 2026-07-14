@@ -14,6 +14,7 @@ from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
+from nokaman.eval.session import SessionManager
 from nokaman.rubrics.registry import SKILLS, SUPPORTED_LANGUAGES, get_language_meta, load_language_rubric
 from nokaman.train.toy_train import train_toy
 
@@ -28,6 +29,8 @@ train_app = typer.Typer(help="Training / calibration")
 app.add_typer(lang_app, name="languages")
 app.add_typer(rubrics_app, name="rubrics")
 app.add_typer(eval_app, name="eval")
+session_app = typer.Typer(help="Adaptive quiz session (state machine)")
+app.add_typer(session_app, name="session")
 app.add_typer(train_app, name="train")
 console = Console()
 
@@ -303,6 +306,52 @@ def train_report() -> None:
         console.print("[yellow]No report yet. Run: nokaman train toy[/yellow]")
         raise typer.Exit(code=1)
     console.print(path.read_text(encoding="utf-8"))
+
+
+# ── session commands ─────────────────────────────────────────
+
+
+@session_app.command("start")
+def session_start(
+    lang: str = typer.Option("en", "--lang", "-l"),
+) -> None:
+    """Start a new adaptive quiz session."""
+    mgr = SessionManager(language=lang)
+    result = mgr.start()
+    _print_json(data=result)
+
+
+@session_app.command("answer")
+def session_answer(
+    session_id: str = typer.Option(..., "--session-id", "-sid"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+    text: str = typer.Option(..., "--text", "-t"),
+) -> None:
+    """Submit an answer to an active session."""
+    mgr = SessionManager(language=lang, session_id=session_id)
+    result = mgr.submit_answer(text)
+    _print_json(data=result)
+
+
+@session_app.command("snapshot")
+def session_snapshot(
+    session_id: str = typer.Option(..., "--session-id", "-sid"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+) -> None:
+    """Get current session snapshot without submitting an answer."""
+    mgr = SessionManager(language=lang, session_id=session_id)
+    _print_json(data=mgr.snapshot())
+
+
+@session_app.command("end")
+def session_end(
+    session_id: str = typer.Option(..., "--session-id", "-sid"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+) -> None:
+    """Manually end an active session."""
+    mgr = SessionManager(language=lang, session_id=session_id)
+    result = mgr.end()
+    _print_json(data=result)
 
 
 @app.command("gui")
