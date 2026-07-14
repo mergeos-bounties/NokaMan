@@ -121,6 +121,7 @@ nokaman-gui
 | `nokaman languages list` | Supported languages + frameworks |
 | `nokaman rubrics list [-l en]` | Skill rubrics |
 | `nokaman eval text …` | Evaluate free text |
+| `nokaman eval batch [--format json|csv]` | Evaluate bundled samples and write JSON or CSV report |
 | `nokaman train …` | Toy calibration |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
 | `nokaman serve` | Optional FastAPI |
@@ -128,6 +129,7 @@ nokaman-gui
 ```powershell
 nokaman demo -l vi
 nokaman demo -l ko
+nokaman eval batch --format csv --out data/runs/batch_eval.csv
 nokaman-gui
 ```
 

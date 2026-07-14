@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -151,17 +152,45 @@ def eval_samples() -> None:
 @eval_app.command("batch")
 def eval_batch(
     out: Path | None = typer.Option(None, "--out", "-o"),
+    output_format: str = typer.Option(
+        "json",
+        "--format",
+        "-F",
+        help="Report format: json or csv",
+    ),
     table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()
-    out_path = out or (RUNS_DIR / "batch_eval.json")
+    fmt = output_format.strip().lower()
+    if fmt not in {"json", "csv"}:
+        console.print("[red]--format must be json or csv[/red]")
+        raise typer.Exit(code=1)
+
+    default_name = "batch_eval.csv" if fmt == "csv" else "batch_eval.json"
+    out_path = out or (RUNS_DIR / default_name)
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    if fmt == "csv":
+        fieldnames = [
+            "file",
+            "language",
+            "skill",
+            "score",
+            "cefr",
+            "expected_cefr",
+            "distance",
+        ]
+        with out_path.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(report.get("rows") or [])
+    else:
+        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
     console.print(
-        f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
-        f"adjacent={report['adjacent_cefr_hit_rate']}"
+        f"[green]batch[/green] format={fmt} n={report['n_samples']} "
+        f"exact={report['exact_cefr_hit_rate']} adjacent={report['adjacent_cefr_hit_rate']}"
     )
-    if table and report.get("by_language"):
+    if fmt == "json" and table and report.get("by_language"):
         t = Table(title="By language")
         t.add_column("Lang")
         t.add_column("n")
