@@ -8,11 +8,24 @@ from nokaman.rubrics.registry import SUPPORTED_LANGUAGES, get_language_meta
 
 try:
     from fastapi import FastAPI, HTTPException
+    from fastapi.middleware.cors import CORSMiddleware
     from pydantic import BaseModel, Field
 except ImportError as exc:  # pragma: no cover
     raise ImportError("Install nokaman[api] for FastAPI support") from exc
 
 app = FastAPI(title="NokaMan", version=__version__)
+
+DEV_WEB_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=DEV_WEB_ORIGINS,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["content-type"],
+)
 
 
 class TextReq(BaseModel):
