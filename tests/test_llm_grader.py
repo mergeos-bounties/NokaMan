@@ -35,7 +35,7 @@ def test_llm_mode_without_api_key_falls_back_to_stub(monkeypatch):
 def test_llm_mode_with_api_key_returns_live_client(monkeypatch):
     _clear_env(monkeypatch)
     monkeypatch.setenv(ENV_MODE, "llm")
-    monkeypatch.setenv(ENV_API_KEY, "sk-not-a-real-key")
+    monkeypatch.setenv(ENV_API_KEY, "test-placeholder-not-a-real-credential")
     client = get_grader_client()
     assert isinstance(client, LiveLLMGraderClient)
 
@@ -72,5 +72,5 @@ def test_live_client_requires_api_key(monkeypatch):
 def test_live_client_does_not_require_httpx_at_import_time():
     # Constructing the client (with a key) must not itself require a network call
     # or httpx import - only score_text() does the lazy import.
-    client = LiveLLMGraderClient(api_key="sk-test", base_url="https://example-llm.invalid/v1")
+    client = LiveLLMGraderClient(api_key="test-placeholder-not-a-real-credential", base_url="https://example-llm.invalid/v1")
     assert client.model  # constructed fine without any network access
