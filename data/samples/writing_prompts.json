@@ -1,0 +1,72 @@
+[
+  {
+    "id": "writing_a2_01",
+    "level": "A2",
+    "prompt": "Write about your daily routine. What do you do in the morning, afternoon, and evening?",
+    "expected_cefr": "A2",
+    "word_count_target": "80-120",
+    "key_vocabulary": [
+      "morning",
+      "afternoon",
+      "evening",
+      "breakfast",
+      "dinner"
+    ]
+  },
+  {
+    "id": "writing_a2_02",
+    "level": "A2",
+    "prompt": "Describe your best friend. What do they look like? What do you like to do together?",
+    "expected_cefr": "A2",
+    "word_count_target": "80-120",
+    "key_vocabulary": [
+      "friend",
+      "hobby",
+      "together",
+      "like",
+      "enjoy"
+    ]
+  },
+  {
+    "id": "writing_b1_01",
+    "level": "B1",
+    "prompt": "Write a review of a restaurant you visited recently. Include the food, service, and atmosphere.",
+    "expected_cefr": "B1",
+    "word_count_target": "120-180",
+    "key_vocabulary": [
+      "recommend",
+      "atmosphere",
+      "service",
+      "delicious",
+      "overall"
+    ]
+  },
+  {
+    "id": "writing_b2_01",
+    "level": "B2",
+    "prompt": "Discuss the advantages and disadvantages of working from home. Include examples from your experience.",
+    "expected_cefr": "B2",
+    "word_count_target": "180-250",
+    "key_vocabulary": [
+      "productivity",
+      "flexibility",
+      "communication",
+      "collaboration",
+      "balance"
+    ]
+  },
+  {
+    "id": "writing_c1_01",
+    "level": "C1",
+    "prompt": "Analyze the impact of artificial intelligence on the job market. Consider both opportunities and challenges.",
+    "expected_cefr": "C1",
+    "word_count_target": "250-350",
+    "key_vocabulary": [
+      "automation",
+      "displacement",
+      "upskilling",
+      "transformative",
+      "paradigm"
+    ]
+  }
+]
