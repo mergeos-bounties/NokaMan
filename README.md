@@ -21,6 +21,7 @@
 - [CLI reference](#cli-reference)
 - [App integration contracts](#app-integration-contracts)
 - [Languages & rubrics](#languages--rubrics)
+- [Supported language catalog](docs/LANGUAGES.md)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
@@ -119,8 +120,11 @@ nokaman-gui
 | `nokaman version` | Version + language codes |
 | `nokaman demo -l en` | Full multi-skill evaluation demo |
 | `nokaman languages list` | Supported languages + frameworks |
+| `nokaman languages coverage` | Language x skill sample coverage matrix |
 | `nokaman rubrics list [-l en]` | Skill rubrics |
+| `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
 | `nokaman eval text …` | Evaluate free text |
+| `nokaman eval batch --out data/out/batch.json` | Score every sample and write a JSON CEFR hit-rate report |
 | `nokaman train …` | Toy calibration |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
 | `nokaman serve` | Optional FastAPI |
@@ -128,6 +132,7 @@ nokaman-gui
 ```powershell
 nokaman demo -l vi
 nokaman demo -l ko
+nokaman eval batch --out data/out/batch.json
 nokaman-gui
 ```
 
@@ -182,6 +187,7 @@ console.log(assessment.cefr, assessment.score, assessment.framework_bands);
 ## Languages & rubrics
 
 Rubrics and samples live under `data/`. Extend by adding rubric JSON + samples, then register in `nokaman.rubrics.registry`.
+See [docs/LANGUAGES.md](docs/LANGUAGES.md) for the supported language catalog, CEFR/JLPT/TOPIK/HSK mappings, and language-pack extension steps.
 
 | Code | Typical use |
 | --- | --- |

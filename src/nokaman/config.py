@@ -18,6 +18,7 @@ def data_dir() -> Path:
 
 
 SAMPLES_DIR = data_dir() / "samples"
+LISTENING_DIR = data_dir() / "listening"
 RUBRICS_DIR = data_dir() / "rubrics"
 OUT_DIR = data_dir() / "out"
 RUNS_DIR = data_dir() / "runs"

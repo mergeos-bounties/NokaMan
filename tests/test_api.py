@@ -54,3 +54,17 @@ def test_assess_alias_rejects_unknown_language() -> None:
         json={"language": "xx", "text": "test", "skill": "writing"},
     )
     assert r.status_code == 400
+
+
+def test_assess_adaptive() -> None:
+    r = client.post(
+        "/assess/adaptive",
+        json={
+            "language": "en",
+            "answers": ["I study English every day because it helps me travel."],
+        },
+    )
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["model"] == "AdaptiveHeuristicSession"
+    assert payload["next_prompt"]["language"] == "en"
