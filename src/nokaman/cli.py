@@ -10,6 +10,7 @@ from rich.table import Table
 
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
+from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
@@ -86,6 +87,37 @@ def languages_list() -> None:
     for code in sorted(SUPPORTED_LANGUAGES):
         meta = get_language_meta(code)
         table.add_row(code, meta["name"], ", ".join(meta["frameworks"]))
+    console.print(table)
+
+
+@lang_app.command("coverage")
+def languages_coverage(json_output: bool = typer.Option(False, "--json")) -> None:
+    report = language_skill_coverage()
+    if json_output:
+        console.print_json(data=report)
+        return
+
+    table = Table(title="Language coverage")
+    table.add_column("Code")
+    table.add_column("Rubric")
+    table.add_column("Total", justify="right")
+    skill_headers = {
+        "vocabulary": "Vocab",
+        "grammar": "Gram",
+        "reading": "Read",
+        "writing": "Write",
+        "listening": "Listen",
+        "speaking": "Speak",
+    }
+    for skill in report["skills"]:
+        table.add_column(skill_headers.get(skill, skill), justify="right")
+    for row in report["languages"]:
+        table.add_row(
+            str(row["code"]),
+            "yes" if row["has_rubric"] else "fallback",
+            str(row["total"]),
+            *[str(row["skills"].get(skill, 0)) for skill in report["skills"]],
+        )
     console.print(table)
 
 
