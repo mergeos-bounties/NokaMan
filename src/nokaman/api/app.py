@@ -3,7 +3,7 @@ from __future__ import annotations
 from nokaman import __version__
 from nokaman.eval.metrics import placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_text
-from nokaman.rubrics.registry import SUPPORTED_LANGUAGES
+from nokaman.rubrics.registry import SUPPORTED_LANGUAGES, get_language_meta
 
 try:
     from fastapi import FastAPI, HTTPException
@@ -35,11 +35,26 @@ def health() -> dict:
     }
 
 
+@app.get("/languages")
+def languages() -> dict:
+    return {
+        "languages": [
+            get_language_meta(code)
+            for code in sorted(SUPPORTED_LANGUAGES)
+        ]
+    }
+
+
 @app.post("/assess/text")
 def assess_text(req: TextReq) -> dict:
     if req.language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, f"unsupported language {req.language}")
     return evaluate_text(req.language, req.text, skill=req.skill)
+
+
+@app.post("/assess")
+def assess(req: TextReq) -> dict:
+    return assess_text(req)
 
 
 @app.get("/assess/demo/{lang}")
