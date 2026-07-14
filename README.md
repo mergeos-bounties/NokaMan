@@ -120,6 +120,7 @@ nokaman-gui
 | `nokaman demo -l en` | Full multi-skill evaluation demo |
 | `nokaman languages list` | Supported languages + frameworks |
 | `nokaman rubrics list [-l en]` | Skill rubrics |
+| `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
 | `nokaman eval text …` | Evaluate free text |
 | `nokaman train …` | Toy calibration |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
