@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from nokaman import __version__
+from nokaman.eval.adaptive import adaptive_session
 from nokaman.eval.metrics import placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_text
 from nokaman.rubrics.registry import SUPPORTED_LANGUAGES
@@ -23,6 +24,12 @@ class TextReq(BaseModel):
 class PlacementReq(BaseModel):
     language: str = "en"
     answers: list[str] = Field(..., min_length=1)
+
+
+class AdaptiveReq(BaseModel):
+    language: str = "en"
+    answers: list[str] = Field(default_factory=list)
+    administered_ids: list[str] = Field(default_factory=list)
 
 
 @app.get("/health")
@@ -54,3 +61,10 @@ def assess_placement(req: PlacementReq) -> dict:
     if req.language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, f"unsupported language {req.language}")
     return placement_test(req.language, req.answers)
+
+
+@app.post("/assess/adaptive")
+def assess_adaptive(req: AdaptiveReq) -> dict:
+    if req.language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, f"unsupported language {req.language}")
+    return adaptive_session(req.language, req.answers, administered_ids=req.administered_ids)
