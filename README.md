@@ -151,6 +151,16 @@ reverse-engineering demo output.
 | `schemas/demo_response.schema.json` | `GET /assess/demo/{lang}` and `demo_payload()` |
 | `sdk/typescript/index.ts` | TypeScript interfaces for request and response payloads |
 
+Optional FastAPI endpoints:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /languages` | List supported language codes, display names, and frameworks |
+| `POST /assess` | App-facing text assessment alias |
+| `POST /assess/text` | Text assessment with language, text, and skill |
+| `GET /assess/demo/{lang}` | Multi-skill demo payload |
+| `POST /assess/placement` | Placement score from multiple answers |
+
 Example TypeScript use:
 
 ```typescript
