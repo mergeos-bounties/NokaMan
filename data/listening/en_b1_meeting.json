@@ -1,0 +1,50 @@
+{
+  "id": "en_b1_meeting",
+  "language": "en",
+  "skill": "listening",
+  "difficulty_cefr": "B1",
+  "expected_cefr": "B1",
+  "transcript": "The project meeting moved from Tuesday morning to Wednesday afternoon because the designer was traveling. The team will send questions by email before lunch.",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "prompt": "Why did the meeting move?",
+      "choices": {
+        "A": "the designer was traveling",
+        "B": "the room was closed",
+        "C": "the manager was sick"
+      },
+      "answer": "A",
+      "response": "A",
+      "weight": 1.5
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "prompt": "When is the meeting now?",
+      "choices": {
+        "A": "Tuesday morning",
+        "B": "Wednesday afternoon",
+        "C": "Friday afternoon"
+      },
+      "answer": "B",
+      "response": "B"
+    },
+    {
+      "id": "q3",
+      "type": "short_answer",
+      "prompt": "What should the team send before lunch?",
+      "accepted_answers": ["questions", "questions by email"],
+      "keywords": ["questions", "email"],
+      "response": "questions by email"
+    },
+    {
+      "id": "q4",
+      "type": "short_answer",
+      "prompt": "Which day was the original meeting?",
+      "accepted_answers": ["Tuesday", "Tuesday morning"],
+      "response": "Wednesday"
+    }
+  ]
+}
