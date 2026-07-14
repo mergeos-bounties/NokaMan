@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -9,6 +10,7 @@ from rich.table import Table
 
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
+from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
@@ -84,8 +86,39 @@ def languages_list() -> None:
     console.print(table)
 
 
+@lang_app.command("coverage")
+def languages_coverage(json_output: bool = typer.Option(False, "--json")) -> None:
+    report = language_skill_coverage()
+    if json_output:
+        console.print_json(data=report)
+        return
+
+    table = Table(title="Language coverage")
+    table.add_column("Code")
+    table.add_column("Rubric")
+    table.add_column("Total", justify="right")
+    skill_headers = {
+        "vocabulary": "Vocab",
+        "grammar": "Gram",
+        "reading": "Read",
+        "writing": "Write",
+        "listening": "Listen",
+        "speaking": "Speak",
+    }
+    for skill in report["skills"]:
+        table.add_column(skill_headers.get(skill, skill), justify="right")
+    for row in report["languages"]:
+        table.add_row(
+            str(row["code"]),
+            "yes" if row["has_rubric"] else "fallback",
+            str(row["total"]),
+            *[str(row["skills"].get(skill, 0)) for skill in report["skills"]],
+        )
+    console.print(table)
+
+
 @rubrics_app.command("list")
-def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
+def rubrics_list(lang: Optional[str] = typer.Option(None, "--lang", "-l")) -> None:
     files = list_rubric_files()
     if lang:
         files = [p for p in files if p.stem == lang.strip().lower()]
@@ -105,8 +138,8 @@ def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
 @eval_app.command("text")
 def eval_text(
     lang: str = typer.Option("en", "--lang", "-l"),
-    text: str | None = typer.Option(None, "--text", "-t"),
-    file: Path | None = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
+    text: Optional[str] = typer.Option(None, "--text", "-t"),
+    file: Optional[Path] = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
     skill: str = typer.Option("writing", "--skill", "-s"),
 ) -> None:
     if file is not None:
@@ -150,7 +183,7 @@ def eval_samples() -> None:
 
 @eval_app.command("batch")
 def eval_batch(
-    out: Path | None = typer.Option(None, "--out", "-o"),
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()

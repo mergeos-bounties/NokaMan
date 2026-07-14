@@ -119,6 +119,7 @@ nokaman-gui
 | `nokaman version` | Version + language codes |
 | `nokaman demo -l en` | Full multi-skill evaluation demo |
 | `nokaman languages list` | Supported languages + frameworks |
+| `nokaman languages coverage` | Language x skill sample coverage matrix |
 | `nokaman rubrics list [-l en]` | Skill rubrics |
 | `nokaman eval text …` | Evaluate free text |
 | `nokaman train …` | Toy calibration |
