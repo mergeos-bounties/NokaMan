@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -30,6 +31,10 @@ app.add_typer(train_app, name="train")
 console = Console()
 
 
+def _print_json(data: object) -> None:
+    console.print_json(data=data, ensure_ascii=True)
+
+
 @app.command("version")
 def version_cmd() -> None:
     console.print(f"NokaMan {__version__}")
@@ -50,7 +55,7 @@ def stats_cmd() -> None:
         skill = parts[1] if len(parts) > 1 else "?"
         by_lang[lang] += 1
         by_skill[skill] += 1
-    console.print_json(
+    _print_json(
         data={
             "version": __version__,
             "n_samples": len(list_sample_files()),
@@ -65,7 +70,7 @@ def stats_cmd() -> None:
 def demo_cmd(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     """Full multi-skill demo for a language (end-to-end runnable)."""
     result = evaluate_demo(lang)
-    console.print_json(data=result)
+    _print_json(data=result)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     path = OUT_DIR / f"demo_{lang}.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
@@ -85,7 +90,7 @@ def languages_list() -> None:
 
 
 @rubrics_app.command("list")
-def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
+def rubrics_list(lang: Optional[str] = typer.Option(None, "--lang", "-l")) -> None:
     files = list_rubric_files()
     if lang:
         files = [p for p in files if p.stem == lang.strip().lower()]
@@ -105,8 +110,8 @@ def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
 @eval_app.command("text")
 def eval_text(
     lang: str = typer.Option("en", "--lang", "-l"),
-    text: str | None = typer.Option(None, "--text", "-t"),
-    file: Path | None = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
+    text: Optional[str] = typer.Option(None, "--text", "-t"),
+    file: Optional[Path] = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
     skill: str = typer.Option("writing", "--skill", "-s"),
 ) -> None:
     if file is not None:
@@ -116,12 +121,12 @@ def eval_text(
     else:
         console.print("[red]Provide --text or --file[/red]")
         raise typer.Exit(code=1)
-    console.print_json(data=result)
+    _print_json(data=result)
 
 
 @eval_app.command("demo")
 def eval_demo(lang: str = typer.Option("en", "--lang", "-l")) -> None:
-    console.print_json(data=evaluate_demo(lang))
+    _print_json(data=evaluate_demo(lang))
 
 
 @eval_app.command("samples")
@@ -150,7 +155,7 @@ def eval_samples() -> None:
 
 @eval_app.command("batch")
 def eval_batch(
-    out: Path | None = typer.Option(None, "--out", "-o"),
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()
@@ -188,7 +193,7 @@ def eval_summary() -> None:
         lang = stem.split("_")[0] if "_" in stem else "?"
         by_lang[lang] = by_lang.get(lang, 0) + 1
     report = batch_evaluate()
-    console.print_json(
+    _print_json(
         data={
             "version": __version__,
             "n_samples": len(files),
@@ -205,7 +210,7 @@ def eval_placement(
     answer: list[str] = typer.Option(..., "--answer", "-a", help="Repeat for multiple answers"),
 ) -> None:
     result = placement_test(lang, answer)
-    console.print_json(data=result)
+    _print_json(data=result)
 
 
 @train_app.command("toy")

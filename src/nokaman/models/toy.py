@@ -123,7 +123,7 @@ def _framework_bands(language: str, cefr: str, score: float) -> dict:
     c = (cefr or "A1").upper()
     # rough ladders for demo UX
     jlpt = {"A1": "N5", "A2": "N4", "B1": "N3", "B2": "N2", "C1": "N1", "C2": "N1+"}.get(c, "N5")
-    topik = {"A1": "1", "A2": "2", "B1": "3", "B2": "4", "C1": "5", "C2": "6"}.get(c, "1")
+    topik = _topik_band(c)
     hsk = {"A1": "1", "A2": "2", "B1": "3", "B2": "4", "C1": "5", "C2": "6"}.get(c, "1")
     ielts = round(3.0 + (score / 100.0) * 6.0, 1)  # ~3.0–9.0
     toeic = int(200 + score * 7)  # ~200–900
@@ -131,13 +131,28 @@ def _framework_bands(language: str, cefr: str, score: float) -> dict:
     if lang == "ja":
         out["jlpt"] = jlpt
     if lang == "ko":
-        out["topik"] = topik
+        out["topik"] = topik["level"]
+        out["topik_track"] = topik["track"]
+        out["topik_label"] = topik["label"]
     if lang == "zh":
         out["hsk"] = hsk
     if lang == "en":
         out["ielts_approx"] = ielts
         out["toeic_approx"] = toeic
     return out
+
+
+def _topik_band(cefr: str) -> dict[str, str]:
+    level = {"A1": "1", "A2": "2", "B1": "3", "B2": "4", "C1": "5", "C2": "6"}.get(
+        cefr,
+        "1",
+    )
+    track = "TOPIK I" if level in {"1", "2"} else "TOPIK II"
+    return {
+        "level": level,
+        "track": track,
+        "label": f"{track} Level {level}",
+    }
 
 
 def _script_bonus(text: str, language: str) -> float:
