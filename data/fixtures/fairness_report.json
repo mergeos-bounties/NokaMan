@@ -1,0 +1,103 @@
+{
+  "suite": "length_matched_en_ko_ja",
+  "model": "ToyAbilityModel",
+  "skill": "writing",
+  "languages": [
+    "en",
+    "ko",
+    "ja"
+  ],
+  "rows": [
+    {
+      "id": "en_daily_notes",
+      "language": "en",
+      "char_count": 63,
+      "token_count": 14,
+      "score": 53.48,
+      "cefr": "B1",
+      "script_bonus": 4.0
+    },
+    {
+      "id": "en_weekend_plan",
+      "language": "en",
+      "char_count": 61,
+      "token_count": 13,
+      "score": 53.46,
+      "cefr": "B1",
+      "script_bonus": 4.0
+    },
+    {
+      "id": "ko_daily_notes",
+      "language": "ko",
+      "char_count": 27,
+      "token_count": 11,
+      "score": 51.66,
+      "cefr": "B1",
+      "script_bonus": 8.0
+    },
+    {
+      "id": "ko_weekend_plan",
+      "language": "ko",
+      "char_count": 26,
+      "token_count": 9,
+      "score": 50.74,
+      "cefr": "B1",
+      "script_bonus": 8.0
+    },
+    {
+      "id": "ja_daily_notes",
+      "language": "ja",
+      "char_count": 32,
+      "token_count": 3,
+      "score": 58.05,
+      "cefr": "B1",
+      "script_bonus": 8.0
+    },
+    {
+      "id": "ja_weekend_plan",
+      "language": "ja",
+      "char_count": 35,
+      "token_count": 3,
+      "score": 58.05,
+      "cefr": "B1",
+      "script_bonus": 8.0
+    }
+  ],
+  "by_language": {
+    "en": {
+      "n": 2,
+      "mean_chars": 62,
+      "mean_tokens": 13.5,
+      "mean_score": 53.47,
+      "mean_script_bonus": 4.0
+    },
+    "ko": {
+      "n": 2,
+      "mean_chars": 26.5,
+      "mean_tokens": 10,
+      "mean_score": 51.2,
+      "mean_script_bonus": 8.0
+    },
+    "ja": {
+      "n": 2,
+      "mean_chars": 33.5,
+      "mean_tokens": 3,
+      "mean_score": 58.05,
+      "mean_script_bonus": 8.0
+    }
+  },
+  "metrics": {
+    "score_spread": 6.85,
+    "token_spread": 10.5,
+    "max_mean_score_language": "ja",
+    "min_mean_score_language": "ko"
+  },
+  "bias_notes": [
+    "Token counts vary despite matched content length, indicating tokenizer sensitivity."
+  ],
+  "mitigations": [
+    "Track score spread on length-matched multilingual fixtures before releases.",
+    "Review script-specific tokenization because CJK/Hangul characters are tokenized differently.",
+    "Calibrate language-specific priors with labeled learner samples before production use."
+  ]
+}
