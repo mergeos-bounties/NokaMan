@@ -27,6 +27,7 @@ SUPPORTED_LANGUAGES: dict[str, dict] = {
     "uk": {"name": "Ukrainian", "frameworks": ["CEFR"]},
     "cs": {"name": "Czech", "frameworks": ["CEFR"]},
     "ro": {"name": "Romanian", "frameworks": ["CEFR"]},
+    "el": {"name": "Greek", "frameworks": ["CEFR"]},
 }
 
 SKILLS = ("vocabulary", "grammar", "reading", "writing", "listening", "speaking")
