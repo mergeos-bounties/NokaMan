@@ -292,16 +292,48 @@ def eval_placement(
 
 
 @train_app.command("toy")
-def train_toy_cmd(epochs: int = typer.Option(3, "--epochs", "-e", min=1, max=50)) -> None:
-    report = train_toy(epochs=epochs)
+def train_toy_cmd(
+    config: Path | None = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=True,
+        dir_okay=False,
+        help="YAML/JSON calibration config.",
+    ),
+    epochs: int | None = typer.Option(None, "--epochs", "-e", min=1, max=50),
+    seed: int | None = typer.Option(None, "--seed", min=0),
+    run_id: str | None = typer.Option(None, "--run-id"),
+    resume: bool | None = typer.Option(None, "--resume/--no-resume"),
+) -> None:
+    report = train_toy(
+        epochs=epochs,
+        config_path=config,
+        seed=seed,
+        run_id=run_id,
+        resume=resume,
+    )
     last = report["history"][-1]["exact_cefr_hit_rate"]
     console.print(f"[green]Calibration complete[/green] exact_cefr_hit_rate={last}")
+    if report.get("resumed"):
+        console.print(f"[dim]resumed[/dim] {report['run_id']}")
     console.print(f"Report: {report['report_path']}")
+    console.print(f"Dashboard: {report['dashboard_path']}")
 
 
 @train_app.command("report")
-def train_report() -> None:
-    path = Path("data/runs/toy_train_report.json")
+def train_report(run_id: str | None = typer.Option(None, "--run-id")) -> None:
+    path = RUNS_DIR / "toy_train_report.json"
+    if run_id:
+        path = RUNS_DIR / run_id / "toy_train_report.json"
+    elif not path.exists():
+        reports = sorted(
+            RUNS_DIR.glob("*/toy_train_report.json"),
+            key=lambda item: item.stat().st_mtime,
+            reverse=True,
+        )
+        if reports:
+            path = reports[0]
     if not path.exists():
         console.print("[yellow]No report yet. Run: nokaman train toy[/yellow]")
         raise typer.Exit(code=1)
