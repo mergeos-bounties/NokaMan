@@ -26,3 +26,7 @@ Open `http://127.0.0.1:5173/`.
 
 The default API base is `http://127.0.0.1:8000`. Change it in the page header if
 your API is running on a different local port.
+
+## Screenshot
+
+![NokaMan web demo](../docs/screenshots/web-demo.png)
