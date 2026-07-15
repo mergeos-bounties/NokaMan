@@ -68,3 +68,16 @@ def test_assess_adaptive() -> None:
     payload = r.json()
     assert payload["model"] == "AdaptiveHeuristicSession"
     assert payload["next_prompt"]["language"] == "en"
+
+
+def test_dev_web_cors_preflight() -> None:
+    r = client.options(
+        "/assess/text",
+        headers={
+            "Origin": "http://127.0.0.1:5173",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert r.status_code == 200
+    assert r.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"

@@ -112,6 +112,8 @@ nokaman rubrics list
 nokaman-gui
 ```
 
+For a browser demo that talks to the local FastAPI app, see [`web/README.md`](web/README.md).
+
 ---
 
 ## CLI reference
@@ -232,6 +234,7 @@ src/nokaman/
   rubrics/        # language metadata + skills
   data/loader.py
   train/toy_train.py
+web/              # no-build browser demo for the FastAPI app
 docs/screenshots/
 docs/diagrams/
 ```

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NokaMan Web Demo</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Static FastAPI demo</p>
+          <h1>NokaMan</h1>
+        </div>
+        <form class="api-form" id="api-form">
+          <label for="api-base">API base</label>
+          <input id="api-base" name="api-base" type="url" value="http://127.0.0.1:8000" />
+          <button type="submit">Check</button>
+        </form>
+        <p class="status" id="api-status" role="status">Not connected</p>
+      </header>
+
+      <section class="workspace" aria-label="Assessment workspace">
+        <form class="panel controls" id="assessment-form">
+          <div class="field-row">
+            <label for="language">Language</label>
+            <select id="language" name="language">
+              <option value="en">English</option>
+              <option value="ko">Korean</option>
+              <option value="ja">Japanese</option>
+              <option value="vi">Vietnamese</option>
+              <option value="zh">Chinese</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <label for="skill">Skill</label>
+            <select id="skill" name="skill">
+              <option value="writing">Writing</option>
+              <option value="reading">Reading</option>
+              <option value="grammar">Grammar</option>
+              <option value="vocabulary">Vocabulary</option>
+              <option value="listening">Listening</option>
+              <option value="speaking">Speaking</option>
+            </select>
+          </div>
+
+          <label for="text">Learner text</label>
+          <textarea id="text" name="text" rows="8">I practice English every morning because I want to speak with confidence when I travel.</textarea>
+
+          <div class="actions">
+            <button type="submit" id="assess-text">Analyze text</button>
+            <button type="button" id="load-demo">Load demo</button>
+          </div>
+
+          <label for="placement-answers">Placement answers</label>
+          <textarea id="placement-answers" name="placement-answers" rows="5">I can introduce myself and describe my daily routine.
+I want to discuss travel plans and explain why I chose each place.</textarea>
+          <button type="button" id="run-placement">Run placement</button>
+        </form>
+
+        <section class="panel results" aria-label="Assessment results">
+          <div class="summary">
+            <div>
+              <p class="label">CEFR</p>
+              <p class="metric" id="cefr">-</p>
+            </div>
+            <div>
+              <p class="label">Score</p>
+              <p class="metric" id="score">-</p>
+            </div>
+            <div>
+              <p class="label">Model</p>
+              <p class="metric small" id="model">-</p>
+            </div>
+          </div>
+
+          <div class="visual-grid">
+            <div>
+              <h2>Skill radar</h2>
+              <div class="radar" id="radar" aria-live="polite"></div>
+            </div>
+            <div>
+              <h2>Framework bands</h2>
+              <div class="chips" id="bands"></div>
+              <h2>Details</h2>
+              <dl class="details" id="details"></dl>
+            </div>
+          </div>
+
+          <h2>Response JSON</h2>
+          <pre id="raw-json">{}</pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
