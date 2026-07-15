@@ -239,6 +239,8 @@ docs/diagrams/
 
 ## Development
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, acceptance gates, and the MergeOS bounty claim flow.
+
 ```powershell
 pytest -q
 ruff check src tests
