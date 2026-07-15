@@ -25,6 +25,7 @@
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
+- [Contributing](#contributing)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
 
@@ -246,12 +247,16 @@ nokaman demo -l en
 python scripts/capture_gui_shots.py   # refresh GUI screenshots
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, test commands, the good-first-issue path, and the MergeOS bounty claim flow.
+
 ---
 
 ## MergeOS bounties
 
 Star + claim bounty → PR to **master** with demo JSON / screenshots → MRG **25–200**.  
-See org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor path and org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
 
 ---
 
