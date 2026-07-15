@@ -1,3 +1,3 @@
 """NokaMan: multi-language learning ability assessment."""
 
-__version__ = "0.3.42"
+__version__ = "0.3.43"
