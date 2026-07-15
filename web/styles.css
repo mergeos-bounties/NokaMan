@@ -128,10 +128,17 @@ h2 {
 }
 
 .panel {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
   box-shadow: var(--shadow);
+}
+
+.workspace > *,
+.visual-grid > *,
+.summary > div {
+  min-width: 0;
 }
 
 .controls {
@@ -271,8 +278,10 @@ textarea {
 }
 
 pre {
+  max-width: 100%;
   max-height: 280px;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #20262e;
