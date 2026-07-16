@@ -1,0 +1,5 @@
+# Minimal calibration config for `nokaman train toy --config configs/example.yaml`.
+run_id: example-calibration
+epochs: 3
+seed: 7
+resume: true

@@ -13,6 +13,22 @@ SUPPORTED_LANGUAGES: dict[str, dict] = {
     "es": {"name": "Spanish", "frameworks": ["CEFR", "DELE"]},
     "fr": {"name": "French", "frameworks": ["CEFR", "DELF"]},
     "de": {"name": "German", "frameworks": ["CEFR", "Goethe"]},
+    "pt": {"name": "Portuguese", "frameworks": ["CEFR", "CAPLE"]},
+    "it": {"name": "Italian", "frameworks": ["CEFR", "CILS"]},
+    "nl": {"name": "Dutch", "frameworks": ["CEFR"]},
+    "sv": {"name": "Swedish", "frameworks": ["CEFR"]},
+    "pl": {"name": "Polish", "frameworks": ["CEFR"]},
+    "tr": {"name": "Turkish", "frameworks": ["CEFR"]},
+    "id": {"name": "Indonesian", "frameworks": ["CEFR"]},
+    "th": {"name": "Thai", "frameworks": ["CEFR"]},
+    "hi": {"name": "Hindi", "frameworks": ["CEFR"]},
+    "ar": {"name": "Arabic", "frameworks": ["CEFR"]},
+    "ru": {"name": "Russian", "frameworks": ["CEFR"]},
+    "uk": {"name": "Ukrainian", "frameworks": ["CEFR"]},
+    "cs": {"name": "Czech", "frameworks": ["CEFR"]},
+    "ro": {"name": "Romanian", "frameworks": ["CEFR"]},
+    "el": {"name": "Greek", "frameworks": ["CEFR"]},
+    "hu": {"name": "Hungarian", "frameworks": ["CEFR"]},
 }
 
 SKILLS = ("vocabulary", "grammar", "reading", "writing", "listening", "speaking")

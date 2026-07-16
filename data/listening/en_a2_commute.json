@@ -1,0 +1,42 @@
+{
+  "id": "en_a2_commute",
+  "language": "en",
+  "skill": "listening",
+  "difficulty_cefr": "A2",
+  "expected_cefr": "A2",
+  "transcript": "Maya takes the bus to the library after breakfast. She meets Omar at nine thirty and they study English together.",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "prompt": "Where does Maya go after breakfast?",
+      "choices": {
+        "A": "the market",
+        "B": "the library",
+        "C": "the station"
+      },
+      "answer": "B",
+      "response": "B"
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "prompt": "Who does Maya meet?",
+      "choices": {
+        "A": "Omar",
+        "B": "her teacher",
+        "C": "her sister"
+      },
+      "answer": "A",
+      "response": "C"
+    },
+    {
+      "id": "q3",
+      "type": "short_answer",
+      "prompt": "How does Maya travel?",
+      "accepted_answers": ["bus", "the bus"],
+      "keywords": ["bus"],
+      "response": "by bus"
+    }
+  ]
+}

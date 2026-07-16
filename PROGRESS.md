@@ -6,6 +6,8 @@
 
 ## ✅ 已完成
 
+- Added `CONTRIBUTING.md` for bounty #18 with setup, tests, good-first-issue path, and MergeOS claim flow.
+- Added README links to the contribution guide.
 - Harness initialized for NokaMan bounty #11.
 - Confirmed actual FastAPI and SDK payload fields before defining contracts.
 - Added JSON Schema contracts, TypeScript interfaces, and contract smoke tests.
@@ -21,13 +23,13 @@
 
 ## 🔄 进行中
 
-- Commit, push, and open PR for issue #11.
+- Open PR for issue #18.
 
 ---
 
 ## 📋 待办
 
-- Commit, push, and open PR for issue #11.
+- Open PR for issue #18 with `Fixes #18`.
 
 ---
 

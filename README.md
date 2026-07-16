@@ -21,9 +21,11 @@
 - [CLI reference](#cli-reference)
 - [App integration contracts](#app-integration-contracts)
 - [Languages & rubrics](#languages--rubrics)
+- [Supported language catalog](docs/LANGUAGES.md)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
+- [Contributing](#contributing)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
 
@@ -110,6 +112,8 @@ nokaman rubrics list
 nokaman-gui
 ```
 
+For a browser demo that talks to the local FastAPI app, see [`web/README.md`](web/README.md).
+
 ---
 
 ## CLI reference
@@ -119,15 +123,20 @@ nokaman-gui
 | `nokaman version` | Version + language codes |
 | `nokaman demo -l en` | Full multi-skill evaluation demo |
 | `nokaman languages list` | Supported languages + frameworks |
+| `nokaman languages coverage` | Language x skill sample coverage matrix |
 | `nokaman rubrics list [-l en]` | Skill rubrics |
+| `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
 | `nokaman eval text …` | Evaluate free text |
-| `nokaman train …` | Toy calibration |
+| `nokaman eval batch --out data/out/batch.json` | Score every sample and write a JSON CEFR hit-rate report |
+| `nokaman train …` | Toy calibration with config/report exports |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
 | `nokaman serve` | Optional FastAPI |
 
 ```powershell
 nokaman demo -l vi
 nokaman demo -l ko
+nokaman eval batch --out data/out/batch.json
+nokaman train toy --config configs/example.yaml
 nokaman-gui
 ```
 
@@ -145,6 +154,16 @@ reverse-engineering demo output.
 | `schemas/assess_text_response.schema.json` | `POST /assess/text` and `assess_for_app(..., multi_skill=false)` |
 | `schemas/demo_response.schema.json` | `GET /assess/demo/{lang}` and `demo_payload()` |
 | `sdk/typescript/index.ts` | TypeScript interfaces for request and response payloads |
+
+Optional FastAPI endpoints:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /languages` | List supported language codes, display names, and frameworks |
+| `POST /assess` | App-facing text assessment alias |
+| `POST /assess/text` | Text assessment with language, text, and skill |
+| `GET /assess/demo/{lang}` | Multi-skill demo payload |
+| `POST /assess/placement` | Placement score from multiple answers |
 
 Example TypeScript use:
 
@@ -172,6 +191,7 @@ console.log(assessment.cefr, assessment.score, assessment.framework_bands);
 ## Languages & rubrics
 
 Rubrics and samples live under `data/`. Extend by adding rubric JSON + samples, then register in `nokaman.rubrics.registry`.
+See [docs/LANGUAGES.md](docs/LANGUAGES.md) for the supported language catalog, CEFR/JLPT/TOPIK/HSK mappings, and language-pack extension steps.
 
 | Code | Typical use |
 | --- | --- |
@@ -215,6 +235,7 @@ src/nokaman/
   rubrics/        # language metadata + skills
   data/loader.py
   train/toy_train.py
+web/              # no-build browser demo for the FastAPI app
 docs/screenshots/
 docs/diagrams/
 ```
@@ -230,12 +251,16 @@ nokaman demo -l en
 python scripts/capture_gui_shots.py   # refresh GUI screenshots
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, test commands, the good-first-issue path, and the MergeOS bounty claim flow.
+
 ---
 
 ## MergeOS bounties
 
 Star + claim bounty → PR to **master** with demo JSON / screenshots → MRG **25–200**.  
-See org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor path and org policy on [mergeos](https://github.com/mergeos-bounties/mergeos).
 
 ---
 

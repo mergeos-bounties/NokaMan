@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -9,10 +10,12 @@ from rich.table import Table
 
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
+from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
-from nokaman.rubrics.registry import SUPPORTED_LANGUAGES, get_language_meta
+from nokaman.eval.session import SessionManager
+from nokaman.rubrics.registry import SKILLS, SUPPORTED_LANGUAGES, get_language_meta, load_language_rubric
 from nokaman.train.toy_train import train_toy
 
 app = typer.Typer(
@@ -26,8 +29,14 @@ train_app = typer.Typer(help="Training / calibration")
 app.add_typer(lang_app, name="languages")
 app.add_typer(rubrics_app, name="rubrics")
 app.add_typer(eval_app, name="eval")
+session_app = typer.Typer(help="Adaptive quiz session (state machine)")
+app.add_typer(session_app, name="session")
 app.add_typer(train_app, name="train")
 console = Console()
+
+
+def _print_json(data: object) -> None:
+    console.print_json(data=data, ensure_ascii=True)
 
 
 @app.command("version")
@@ -50,7 +59,7 @@ def stats_cmd() -> None:
         skill = parts[1] if len(parts) > 1 else "?"
         by_lang[lang] += 1
         by_skill[skill] += 1
-    console.print_json(
+    _print_json(
         data={
             "version": __version__,
             "n_samples": len(list_sample_files()),
@@ -65,7 +74,7 @@ def stats_cmd() -> None:
 def demo_cmd(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     """Full multi-skill demo for a language (end-to-end runnable)."""
     result = evaluate_demo(lang)
-    console.print_json(data=result)
+    _print_json(data=result)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     path = OUT_DIR / f"demo_{lang}.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
@@ -84,8 +93,39 @@ def languages_list() -> None:
     console.print(table)
 
 
+@lang_app.command("coverage")
+def languages_coverage(json_output: bool = typer.Option(False, "--json")) -> None:
+    report = language_skill_coverage()
+    if json_output:
+        console.print_json(data=report)
+        return
+
+    table = Table(title="Language coverage")
+    table.add_column("Code")
+    table.add_column("Rubric")
+    table.add_column("Total", justify="right")
+    skill_headers = {
+        "vocabulary": "Vocab",
+        "grammar": "Gram",
+        "reading": "Read",
+        "writing": "Write",
+        "listening": "Listen",
+        "speaking": "Speak",
+    }
+    for skill in report["skills"]:
+        table.add_column(skill_headers.get(skill, skill), justify="right")
+    for row in report["languages"]:
+        table.add_row(
+            str(row["code"]),
+            "yes" if row["has_rubric"] else "fallback",
+            str(row["total"]),
+            *[str(row["skills"].get(skill, 0)) for skill in report["skills"]],
+        )
+    console.print(table)
+
+
 @rubrics_app.command("list")
-def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
+def rubrics_list(lang: Optional[str] = typer.Option(None, "--lang", "-l")) -> None:
     files = list_rubric_files()
     if lang:
         files = [p for p in files if p.stem == lang.strip().lower()]
@@ -102,11 +142,54 @@ def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
     console.print(table)
 
 
+@rubrics_app.command("explain")
+def rubrics_explain(
+    lang: str = typer.Option("en", "--lang", "-l"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    try:
+        meta = get_language_meta(lang)
+    except KeyError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    rubric = load_language_rubric(meta["code"])
+    skills = rubric.get("skills") or {}
+    rows = [
+        {
+            "skill": skill,
+            "weight": float((skills.get(skill) or {}).get("weight", 1.0)),
+            "notes": str((skills.get(skill) or {}).get("notes", "")),
+        }
+        for skill in SKILLS
+    ]
+    report = {
+        "language": meta["code"],
+        "name": meta["name"],
+        "frameworks": meta["frameworks"],
+        "bands": rubric.get("bands") or [],
+        "skills": rows,
+    }
+    if json_output:
+        console.print_json(data=report)
+        return
+
+    table = Table(title=f"Rubric weights: {meta['name']} ({meta['code']})")
+    table.add_column("Skill")
+    table.add_column("Weight", justify="right")
+    table.add_column("Notes")
+    for row in rows:
+        table.add_row(row["skill"], f"{row['weight']:g}", row["notes"])
+    console.print(table)
+    console.print(f"Frameworks: {', '.join(meta['frameworks'])}")
+    console.print(f"Bands: {', '.join(report['bands'])}")
+
+
 @eval_app.command("text")
 def eval_text(
     lang: str = typer.Option("en", "--lang", "-l"),
-    text: str | None = typer.Option(None, "--text", "-t"),
-    file: Path | None = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
+    text: Optional[str] = typer.Option(None, "--text", "-t"),
+    file: Optional[Path] = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
     skill: str = typer.Option("writing", "--skill", "-s"),
 ) -> None:
     if file is not None:
@@ -116,12 +199,12 @@ def eval_text(
     else:
         console.print("[red]Provide --text or --file[/red]")
         raise typer.Exit(code=1)
-    console.print_json(data=result)
+    _print_json(data=result)
 
 
 @eval_app.command("demo")
 def eval_demo(lang: str = typer.Option("en", "--lang", "-l")) -> None:
-    console.print_json(data=evaluate_demo(lang))
+    _print_json(data=evaluate_demo(lang))
 
 
 @eval_app.command("samples")
@@ -150,12 +233,12 @@ def eval_samples() -> None:
 
 @eval_app.command("batch")
 def eval_batch(
-    out: Path | None = typer.Option(None, "--out", "-o"),
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()
     out_path = out or (RUNS_DIR / "batch_eval.json")
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     console.print(
         f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
@@ -188,7 +271,7 @@ def eval_summary() -> None:
         lang = stem.split("_")[0] if "_" in stem else "?"
         by_lang[lang] = by_lang.get(lang, 0) + 1
     report = batch_evaluate()
-    console.print_json(
+    _print_json(
         data={
             "version": __version__,
             "n_samples": len(files),
@@ -205,24 +288,102 @@ def eval_placement(
     answer: list[str] = typer.Option(..., "--answer", "-a", help="Repeat for multiple answers"),
 ) -> None:
     result = placement_test(lang, answer)
-    console.print_json(data=result)
+    _print_json(data=result)
 
 
 @train_app.command("toy")
-def train_toy_cmd(epochs: int = typer.Option(3, "--epochs", "-e", min=1, max=50)) -> None:
-    report = train_toy(epochs=epochs)
+def train_toy_cmd(
+    config: Path | None = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=True,
+        dir_okay=False,
+        help="YAML/JSON calibration config.",
+    ),
+    epochs: int | None = typer.Option(None, "--epochs", "-e", min=1, max=50),
+    seed: int | None = typer.Option(None, "--seed", min=0),
+    run_id: str | None = typer.Option(None, "--run-id"),
+    resume: bool | None = typer.Option(None, "--resume/--no-resume"),
+) -> None:
+    report = train_toy(
+        epochs=epochs,
+        config_path=config,
+        seed=seed,
+        run_id=run_id,
+        resume=resume,
+    )
     last = report["history"][-1]["exact_cefr_hit_rate"]
     console.print(f"[green]Calibration complete[/green] exact_cefr_hit_rate={last}")
+    if report.get("resumed"):
+        console.print(f"[dim]resumed[/dim] {report['run_id']}")
     console.print(f"Report: {report['report_path']}")
+    console.print(f"Dashboard: {report['dashboard_path']}")
 
 
 @train_app.command("report")
-def train_report() -> None:
-    path = Path("data/runs/toy_train_report.json")
+def train_report(run_id: str | None = typer.Option(None, "--run-id")) -> None:
+    path = RUNS_DIR / "toy_train_report.json"
+    if run_id:
+        path = RUNS_DIR / run_id / "toy_train_report.json"
+    elif not path.exists():
+        reports = sorted(
+            RUNS_DIR.glob("*/toy_train_report.json"),
+            key=lambda item: item.stat().st_mtime,
+            reverse=True,
+        )
+        if reports:
+            path = reports[0]
     if not path.exists():
         console.print("[yellow]No report yet. Run: nokaman train toy[/yellow]")
         raise typer.Exit(code=1)
     console.print(path.read_text(encoding="utf-8"))
+
+
+# ── session commands ─────────────────────────────────────────
+
+
+@session_app.command("start")
+def session_start(
+    lang: str = typer.Option("en", "--lang", "-l"),
+) -> None:
+    """Start a new adaptive quiz session."""
+    mgr = SessionManager(language=lang)
+    result = mgr.start()
+    _print_json(data=result)
+
+
+@session_app.command("answer")
+def session_answer(
+    session_id: str = typer.Option(..., "--session-id", "-sid"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+    text: str = typer.Option(..., "--text", "-t"),
+) -> None:
+    """Submit an answer to an active session."""
+    mgr = SessionManager(language=lang, session_id=session_id)
+    result = mgr.submit_answer(text)
+    _print_json(data=result)
+
+
+@session_app.command("snapshot")
+def session_snapshot(
+    session_id: str = typer.Option(..., "--session-id", "-sid"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+) -> None:
+    """Get current session snapshot without submitting an answer."""
+    mgr = SessionManager(language=lang, session_id=session_id)
+    _print_json(data=mgr.snapshot())
+
+
+@session_app.command("end")
+def session_end(
+    session_id: str = typer.Option(..., "--session-id", "-sid"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+) -> None:
+    """Manually end an active session."""
+    mgr = SessionManager(language=lang, session_id=session_id)
+    result = mgr.end()
+    _print_json(data=result)
 
 
 @app.command("gui")
