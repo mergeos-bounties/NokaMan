@@ -39,9 +39,7 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
     by_language: dict[str, dict] = {}
     for row in rows:
         lang = str(row.get("language") or "?")
-        bucket = by_language.setdefault(
-            lang, {"n": 0, "labeled": 0, "exact": 0, "adjacent": 0}
-        )
+        bucket = by_language.setdefault(lang, {"n": 0, "labeled": 0, "exact": 0, "adjacent": 0})
         bucket["n"] += 1
         if row.get("expected_cefr"):
             bucket["labeled"] += 1
@@ -53,12 +51,8 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
                 bucket["adjacent"] += 1
     for lang, bucket in by_language.items():
         lab = bucket["labeled"] or 0
-        bucket["exact_cefr_hit_rate"] = (
-            round(bucket["exact"] / lab, 4) if lab else None
-        )
-        bucket["adjacent_cefr_hit_rate"] = (
-            round(bucket["adjacent"] / lab, 4) if lab else None
-        )
+        bucket["exact_cefr_hit_rate"] = round(bucket["exact"] / lab, 4) if lab else None
+        bucket["adjacent_cefr_hit_rate"] = round(bucket["adjacent"] / lab, 4) if lab else None
     return {
         "n_samples": len(files),
         "n_labeled": labeled,

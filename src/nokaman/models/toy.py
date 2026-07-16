@@ -166,6 +166,8 @@ def _script_bonus(text: str, language: str) -> float:
         return 8.0
     if language == "en" and re.search(r"[A-Za-z]", text):
         return 4.0
-    if language == "vi" and re.search(r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", text, re.I):
+    if language == "vi" and re.search(
+        r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", text, re.I
+    ):
         return 6.0
     return 0.0

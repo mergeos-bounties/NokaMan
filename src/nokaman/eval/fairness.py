@@ -78,8 +78,12 @@ def build_fairness_report() -> dict:
     metrics = {
         "score_spread": round(max(mean_scores) - min(mean_scores), 2),
         "token_spread": round(max(mean_tokens) - min(mean_tokens), 2),
-        "max_mean_score_language": max(by_language, key=lambda lang: by_language[lang]["mean_score"]),
-        "min_mean_score_language": min(by_language, key=lambda lang: by_language[lang]["mean_score"]),
+        "max_mean_score_language": max(
+            by_language, key=lambda lang: by_language[lang]["mean_score"]
+        ),
+        "min_mean_score_language": min(
+            by_language, key=lambda lang: by_language[lang]["mean_score"]
+        ),
     }
     return {
         "suite": "length_matched_en_ko_ja",
@@ -109,7 +113,9 @@ def write_fairness_report(path: Path | None = None) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate EN/KO/JA length-matched fairness report.")
+    parser = argparse.ArgumentParser(
+        description="Generate EN/KO/JA length-matched fairness report."
+    )
     parser.add_argument("--out", type=Path, default=RUNS_DIR / "fairness_report.json")
     args = parser.parse_args(argv)
     path = write_fairness_report(args.out)
@@ -128,7 +134,9 @@ def _bias_notes(metrics: dict) -> list[str]:
             "Token counts vary despite matched content length, indicating tokenizer sensitivity."
         )
     if not notes:
-        notes.append("No large spread detected in this small fixture; keep monitoring with more data.")
+        notes.append(
+            "No large spread detected in this small fixture; keep monitoring with more data."
+        )
     return notes
 
 

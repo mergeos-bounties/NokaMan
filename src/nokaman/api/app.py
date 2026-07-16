@@ -57,12 +57,7 @@ def health() -> dict:
 
 @app.get("/languages")
 def languages() -> dict:
-    return {
-        "languages": [
-            get_language_meta(code)
-            for code in sorted(SUPPORTED_LANGUAGES)
-        ]
-    }
+    return {"languages": [get_language_meta(code) for code in sorted(SUPPORTED_LANGUAGES)]}
 
 
 @app.post("/assess/text")

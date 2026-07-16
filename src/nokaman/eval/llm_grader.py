@@ -85,9 +85,7 @@ class LLMGrader:
             return self._toy.score_text(text, skill=skill)
 
         prompt = (
-            f"Language: {self.language}\n"
-            f"Skill being assessed: {skill}\n"
-            f"Learner response:\n{text}"
+            f"Language: {self.language}\nSkill being assessed: {skill}\nLearner response:\n{text}"
         )
         payload = json.dumps(
             {
@@ -128,6 +126,7 @@ class LLMGrader:
         valid_cefr = {"A1", "A2", "B1", "B2", "C1", "C2"}
         if cefr not in valid_cefr:
             from nokaman.models.cefr import score_to_cefr
+
             cefr = score_to_cefr(score)
 
         return {
@@ -140,9 +139,7 @@ class LLMGrader:
             "features": {"tokens": len(text.split())},
         }
 
-    def _fallback(
-        self, text: str, skill: str, reason: str = ""
-    ) -> dict[str, Any]:
+    def _fallback(self, text: str, skill: str, reason: str = "") -> dict[str, Any]:
         result = self._toy.score_text(text, skill=skill)
         result["llm_fallback_reason"] = reason
         return result
