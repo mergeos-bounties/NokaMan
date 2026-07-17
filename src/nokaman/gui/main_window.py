@@ -268,9 +268,7 @@ class MainWindow(QMainWindow):
         self.lang_table.setRowCount(len(codes))
         for r, code in enumerate(codes):
             meta = get_language_meta(code)
-            for c, val in enumerate(
-                [code, meta["name"], ", ".join(meta["frameworks"])]
-            ):
+            for c, val in enumerate([code, meta["name"], ", ".join(meta["frameworks"])]):
                 self.lang_table.setItem(r, c, QTableWidgetItem(val))
         self.lang_table.resizeColumnsToContents()
 
@@ -352,7 +350,9 @@ class MainWindow(QMainWindow):
                 result = evaluate_text(lang, text, skill=skill)
             self.eval_out.setPlainText(json.dumps(result, indent=2, ensure_ascii=False))
             cefr = result.get("cefr")
-            self._status(f"Eval done · CEFR {cefr} · score={result.get('score') or result.get('overall')}")
+            self._status(
+                f"Eval done · CEFR {cefr} · score={result.get('score') or result.get('overall')}"
+            )
         except Exception as exc:  # noqa: BLE001
             self.eval_out.setPlainText(f"Error: {exc}")
 
@@ -368,9 +368,7 @@ class MainWindow(QMainWindow):
         s.setObjectName("h2")
         lay.addWidget(s)
         self.samples_table = QTableWidget(0, 5)
-        self.samples_table.setHorizontalHeaderLabels(
-            ["File", "Lang", "Skill", "CEFR", "Score"]
-        )
+        self.samples_table.setHorizontalHeaderLabels(["File", "Lang", "Skill", "CEFR", "Score"])
         self.samples_table.horizontalHeader().setStretchLastSection(True)
         self.samples_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.samples_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -440,9 +438,7 @@ class MainWindow(QMainWindow):
                 "adjacent_cefr_hit_rate": report["adjacent_cefr_hit_rate"],
             }
             self.batch_out.setPlainText(json.dumps(summary, indent=2))
-            self._status(
-                f"Batch · n={report['n_samples']} exact={report['exact_cefr_hit_rate']}"
-            )
+            self._status(f"Batch · n={report['n_samples']} exact={report['exact_cefr_hit_rate']}")
             self.refresh_samples()
         except Exception as exc:  # noqa: BLE001
             self.batch_out.setPlainText(f"Error: {exc}")

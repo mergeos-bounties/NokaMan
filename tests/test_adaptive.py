@@ -9,7 +9,9 @@ def test_select_next_prompt_uses_nearest_unadministered_prompt() -> None:
         {"id": "b1", "target_score": 57.0},
         {"id": "b2", "target_score": 72.0},
     ]
-    selected = select_next_prompt(ability_score=60.0, prompt_bank=prompt_bank, administered_ids={"b1"})
+    selected = select_next_prompt(
+        ability_score=60.0, prompt_bank=prompt_bank, administered_ids={"b1"}
+    )
     assert selected is not None
     assert selected["id"] == "b2"
 

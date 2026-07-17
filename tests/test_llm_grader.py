@@ -55,6 +55,7 @@ class TestLLMGraderEnabled:
     def test_environment_variable_name(self) -> None:
         """Verify the env var name is exactly ENABLE_LLM_GRADER."""
         from nokaman.eval.llm_grader import _is_enabled
+
         os.environ["ENABLE_LLM_GRADER"] = "true"
         assert _is_enabled() is True
         del os.environ["ENABLE_LLM_GRADER"]
@@ -62,6 +63,7 @@ class TestLLMGraderEnabled:
 
     def test_enabled_variants(self) -> None:
         from nokaman.eval.llm_grader import _is_enabled
+
         for val in ("true", "1", "yes", "True", "YES"):
             os.environ["ENABLE_LLM_GRADER"] = val
             assert _is_enabled() is True

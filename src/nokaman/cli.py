@@ -15,7 +15,12 @@ from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubri
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
-from nokaman.rubrics.registry import SKILLS, SUPPORTED_LANGUAGES, get_language_meta, load_language_rubric
+from nokaman.rubrics.registry import (
+    SKILLS,
+    SUPPORTED_LANGUAGES,
+    get_language_meta,
+    load_language_rubric,
+)
 from nokaman.train.toy_train import train_toy
 
 app = typer.Typer(

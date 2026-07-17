@@ -57,7 +57,7 @@ class SessionManager:
     def __init__(self, language: str, session_id: str | None = None) -> None:
         code = language.strip().lower()
         bank = build_prompt_bank(code)
-        name = (bank[0]["language"] if bank else code)
+        name = bank[0]["language"] if bank else code
         self._session = Session(
             session_id=session_id or uuid.uuid4().hex[:12],
             language=code,
@@ -105,9 +105,7 @@ class SessionManager:
     def submit_answer(self, answer_text: str) -> dict[str, Any]:
         """Store an answer, re-estimate ability, return next prompt or session-end."""
         if self._session.state != SessionState.ACTIVE:
-            raise RuntimeError(
-                f"cannot submit answer in state {self._session.state.value}"
-            )
+            raise RuntimeError(f"cannot submit answer in state {self._session.state.value}")
         estimates = estimate_answer_scores(self._session.language, [answer_text])
         if not estimates:
             raise ValueError("empty estimate from answer")

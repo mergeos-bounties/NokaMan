@@ -59,9 +59,7 @@ class TestSessionManager:
         # en has 6 prompts (A1-C2)
         for i in range(6):
             assert out["next_prompt"] is not None, f"ran out at answer {i}"
-            out = mgr.submit_answer(
-                f"This is my test answer number {i} for the adaptive session."
-            )
+            out = mgr.submit_answer(f"This is my test answer number {i} for the adaptive session.")
         # After 6 answers, all prompts administered
         assert mgr.state == SessionState.COMPLETE
         assert out["next_prompt"] is None
