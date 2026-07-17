@@ -27,6 +27,7 @@
 - [Repository layout](#repository-layout)
 - [Development](#development)
 - [Contributing](#contributing)
+- [Docs: CEFR expected_cefr field mapping table](docs/CEFR_MAPPING.md#cefr-mapping-notes)
 - [MergeOS bounties](#mergeos-bounties)
 - [License](#license)
 
