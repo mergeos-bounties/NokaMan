@@ -51,7 +51,7 @@ NokaMan maps its 0-100 toy model score to CEFR-style bands in `nokaman.models.ce
 | `80-89.99` | C1 |
 | `90-100` | C2 |
 
-Sample files may include `expected_cefr`; batch evaluation reports exact and adjacent CEFR hit rates against that field.
+Sample files may include `expected_cefr`; batch evaluation reports exact and adjacent CEFR hit rates against that field. See the [language sample guide](SAMPLES.md) for the complete JSON shape, naming rules, and verification workflow.
 
 ## Regional Framework Adapters
 
@@ -72,7 +72,7 @@ English additionally emits approximate IELTS and TOEIC values from the raw score
 
 1. Add metadata to `SUPPORTED_LANGUAGES` in `src/nokaman/rubrics/registry.py`.
 2. Add `data/rubrics/<code>.json` with `language`, `name`, `skills`, and `bands`.
-3. Add at least one `data/samples/<code>_<skill>_<band>.json` file with `language`, `skill`, `text`, and `expected_cefr`.
+3. Add at least one `data/samples/<code>_<skill>_<band>.json` file by following the [language sample guide](SAMPLES.md).
 4. Run `nokaman languages list`, `nokaman rubrics list -l <code>`, and `nokaman eval text -l <code> --text "..."`
 5. Run `pytest -q` and `ruff check src tests`.
 
