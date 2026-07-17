@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 from pathlib import Path
 from typing import Optional
@@ -239,9 +241,32 @@ def eval_samples() -> None:
 @eval_app.command("batch")
 def eval_batch(
     out: Optional[Path] = typer.Option(None, "--out", "-o"),
-    table: bool = typer.Option(True, "--table/--json-only"),
+    table: bool = typer.Option(True, "--table/--no-table"),
+    format: str = typer.Option("json", "--format", "-f",
+        help="Output format: json (default) or csv"),
 ) -> None:
+    if format not in ("json", "csv"):
+        console.print("[red]--format must be 'json' or 'csv'[/red]")
+        raise typer.Exit(code=1)
+
     report = batch_evaluate()
+    rows = report.get("rows", [])
+
+    if format == "csv":
+        # Write CSV file (teacher workflow: one row per sample)
+        out_path = out or (RUNS_DIR / "batch_eval.csv")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        fieldnames = ["file", "language", "skill", "score", "cefr",
+                       "expected_cefr", "distance"]
+        with out_path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in rows:
+                writer.writerow({k: row.get(k, "") for k in fieldnames})
+        console.print(f"[green]CSV written[/green] {out_path}  ({len(rows)} rows)")
+        return
+
+    # Default: JSON
     out_path = out or (RUNS_DIR / "batch_eval.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
