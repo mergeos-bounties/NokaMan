@@ -236,6 +236,95 @@ def eval_samples() -> None:
     console.print(table)
 
 
+@eval_app.command("samples-list")
+def eval_samples_list(
+    language: Optional[str] = typer.Option(None, "--language", "-l", help="Filter by language code (e.g., en, fr)"),
+    skill: Optional[str] = typer.Option(None, "--skill", "-s", help="Filter by skill (e.g., writing, speaking)"),
+) -> None:
+    """List catalogued samples with optional language and skill filters."""
+    files = list_sample_files()
+    if not files:
+        console.print("[yellow]No samples[/yellow]")
+        raise typer.Exit()
+    
+    # Apply filters
+    filtered_files = []
+    for path in files:
+        result = evaluate_sample_file(path)
+        lang_match = language is None or str(result.get("language", "")).lower() == language.lower()
+        skill_match = skill is None or str(result.get("skill", "")).lower() == skill.lower()
+        if lang_match and skill_match:
+            filtered_files.append((path, result))
+    
+    if not filtered_files:
+        console.print("[yellow]No samples match the given filters[/yellow]")
+        raise typer.Exit()
+    
+    table = Table(title=f"Samples ({len(filtered_files)} filtered)")
+    table.add_column("File")
+    table.add_column("Lang")
+    table.add_column("Skill")
+    table.add_column("CEFR")
+    table.add_column("Score")
+    for path, result in filtered_files:
+        table.add_row(
+            path.name,
+            str(result.get("language")),
+            str(result.get("skill")),
+            str(result.get("cefr")),
+            str(result.get("score")),
+        )
+    console.print(table)
+
+
+@eval_app.command("score")
+def eval_score(
+    sample: Path = typer.Option(..., "--sample", "-s", help="Path to sample JSON file", exists=True, dir_okay=False),
+) -> None:
+    """Score a single sample file and show detailed results."""
+    result = evaluate_sample_file(sample)
+    table = Table(title=f"Score: {sample.name}")
+    table.add_column("Field")
+    table.add_column("Value")
+    
+    # Basic info
+    table.add_row("File", sample.name)
+    table.add_column("Language", str(result.get("language", "?")))
+    table.add_row("Skill", str(result.get("skill", "?")))
+    table.add_row("CEFR", str(result.get("cefr", "?")))
+    table.add_row("Score", str(result.get("score", "?")))
+    
+    # Additional details if available
+    if result.get("expected_cefr"):
+        table.add_row("Expected CEFR", str(result.get("expected_cefr")))
+        if result.get("band_check"):
+            table.add_row("Band Check", str(result.get("band_check")))
+    
+    if result.get("sample_id"):
+        table.add_row("Sample ID", str(result.get("sample_id")))
+        
+    if result.get("source"):
+        table.add_row("Source", str(result.get("source")))
+        
+    # Framework bands if available
+    if result.get("framework_bands"):
+        fb = result.get("framework_bands")
+        if isinstance(fb, dict):
+            for k, v in fb.items():
+                table.add_row(f"Framework: {k}", str(v))
+        else:
+            table.add_row("Framework Bands", str(fb))
+            
+    # Features if available (from toy model)
+    if result.get("features"):
+        features = result.get("features")
+        if isinstance(features, dict):
+            for k, v in list(features.items())[:5]:  # Limit to first 5 features
+                table.add_row(f"Feature: {k}", str(v))
+    
+    console.print(table)
+
+
 @eval_app.command("batch")
 def eval_batch(
     out: Optional[Path] = typer.Option(None, "--out", "-o"),
@@ -398,20 +487,68 @@ def gui_cmd() -> None:
 
     raise SystemExit(gui_main())
 
-
 @app.command("serve")
 def serve_cmd(
-    host: str = typer.Option("127.0.0.1", "--host"),
-    port: int = typer.Option(8767, "--port", min=1, max=65535),
+    host: str = typer.Option("127.0.0.1", "--host", "--port", min=1, max=65535),
+    port: int = typer.Option(8767, "--port", "-p", help="Port to serve on"),
 ) -> None:
+    """Run FastAPI (pip install -e '.[api]')."""
     """Run FastAPI (pip install -e '.[api]')."""
     try:
         import uvicorn
     except ImportError as exc:
-        console.print('[red]Install:[/red] pip install -e ".[api]"')
+        console.print('[red]Install API:[/red] pip install -e ".[api]"')
         raise typer.Exit(1) from exc
-    console.print(f"Serving http://{host}:{port}/health")
-    uvicorn.run("nokaman.api.app:app", host=host, port=port, log_level="info")
+    console.print(f"NokaMan API: http://{host}:{port}/docs")
+    uvicorn.run("nokaman.api:app", host=host, port=port, log_level="info")
+
+
+@app.command("score")
+def score_cmd(
+    sample: Path = typer.Option(..., "--sample", "-s", help="Path to sample JSON file", exists=True, dir_okay=False),
+) -> None:
+    """Score a single sample file and show detailed results via rich table."""
+    result = evaluate_sample_file(sample)
+    table = Table(title=f"Score: {sample.name}")
+    table.add_column("Field")
+    table.add_column("Value")
+    
+    # Basic info
+    table.add_row("File", sample.name)
+    table.add_row("Language", str(result.get("language", "?")))
+    table.add_row("Skill", str(result.get("skill", "?")))
+    table.add_row("CEFR", str(result.get("cefr", "?")))
+    table.add_row("Score", str(result.get("score", "?")))
+    
+    # Additional details if available
+    if result.get("expected_cefr"):
+        table.add_row("Expected CEFR", str(result.get("expected_cefr")))
+        if result.get("band_check"):
+            table.add_row("Band Check", str(result.get("band_check")))
+    
+    if result.get("sample_id"):
+        table.add_row("Sample ID", str(result.get("sample_id")))
+        
+    if result.get("source"):
+        table.add_row("Source", str(result.get("source")))
+        
+    # Framework bands if available
+    if result.get("framework_bands"):
+        fb = result.get("framework_bands")
+        if isinstance(fb, dict):
+            for k, v in fb.items():
+                table.add_row(f"Framework: {k}", str(v))
+        else:
+            table.add_row("Framework Bands", str(fb))
+            
+    # Features if available (from toy model)
+    if result.get("features"):
+        features = result.get("features")
+        if isinstance(features, dict):
+            for k, v in list(features.items())[:5]:  # Limit to first 5 features
+                table.add_row(f"Feature: {k}", str(v))
+    
+    console.print(table)
 
 
 if __name__ == "__main__":
