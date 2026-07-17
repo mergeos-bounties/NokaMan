@@ -30,6 +30,7 @@ SUPPORTED_LANGUAGES: dict[str, dict] = {
     "el": {"name": "Greek", "frameworks": ["CEFR"]},
     "hu": {"name": "Hungarian", "frameworks": ["CEFR"]},
     "fi": {"name": "Finnish", "frameworks": ["CEFR"]},
+    "nb": {"name": "Norwegian Bokmål", "frameworks": ["CEFR"]},
 }
 
 SKILLS = ("vocabulary", "grammar", "reading", "writing", "listening", "speaking")
