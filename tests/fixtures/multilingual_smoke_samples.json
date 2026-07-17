@@ -3,5 +3,6 @@
   {"file": "de_writing_a2.json", "language": "de"},
   {"file": "es_writing_a2.json", "language": "es"},
   {"file": "fr_writing_a2.json", "language": "fr"},
-  {"file": "ja_writing_a2.json", "language": "ja"}
+  {"file": "ja_writing_a2.json", "language": "ja"},
+  {"file": "vi_writing_a2.json", "language": "vi"}
 ]
