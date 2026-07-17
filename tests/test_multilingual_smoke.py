@@ -19,8 +19,9 @@ def test_five_language_sample_smoke_runs_without_network(monkeypatch) -> None:
     monkeypatch.setattr(socket, "create_connection", blocked_network)
     cases = json.loads(FIXTURE.read_text(encoding="utf-8"))
 
-    assert len(cases) >= 5
-    assert len({case["language"] for case in cases}) >= 5
+    assert len(cases) >= 6
+    assert any(case["file"] == "vi_writing_a2.json" and case["language"] == "vi" for case in cases)
+    assert len({case["language"] for case in cases}) >= 6
     for case in cases:
         result = evaluate_sample_file(ROOT / "data" / "samples" / case["file"])
         assert result["language"] == case["language"]
