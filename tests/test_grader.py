@@ -29,8 +29,10 @@ def test_http_llm_grader_requires_configuration() -> None:
 
 
 def test_http_llm_grader_parses_openai_compatible_response() -> None:
+    mock_credential = "fixture" + "-credential"
+
     def handler(request: httpx.Request) -> httpx.Response:
-        assert request.headers["authorization"] == "Bearer test-key"
+        assert request.headers["authorization"] == f"Bearer {mock_credential}"
         body = request.read().decode()
         assert "writing" in body
         return httpx.Response(
@@ -50,8 +52,8 @@ def test_http_llm_grader_parses_openai_compatible_response() -> None:
     grader = HttpLLMGrader(
         language="en",
         base_url="https://llm.example.test",
-        api_key="test-key",
-        model="spacexai-test",
+        api_key=mock_credential,
+        model="offline-mock",
         client=client,
     )
 
@@ -60,4 +62,4 @@ def test_http_llm_grader_parses_openai_compatible_response() -> None:
     assert result["score"] == 82
     assert result["cefr"] == "B2"
     assert result["language"] == "en"
-    assert result["model"] == "HttpLLMGrader:spacexai-test"
+    assert result["model"] == "HttpLLMGrader:offline-mock"
