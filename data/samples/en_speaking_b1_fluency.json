@@ -1,0 +1,13 @@
+{
+  "id": "en_speaking_b1_fluency",
+  "language": "en",
+  "skill": "speaking",
+  "expected_cefr": "B1",
+  "text": "I enjoy practicing English with my classmates. We discuss a short topic, compare our ideas, and then explain what we learned to the rest of the group.",
+  "fluency_observations": {
+    "duration_seconds": 22.0,
+    "pause_count": 2,
+    "filler_count": 0
+  },
+  "notes": "Synthetic offline fixture; no learner recording or personal data."
+}

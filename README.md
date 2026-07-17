@@ -22,6 +22,7 @@
 - [App integration contracts](#app-integration-contracts)
 - [Languages & rubrics](#languages--rubrics)
 - [Supported language catalog](docs/LANGUAGES.md)
+- [Offline speaking fluency rubric](docs/SPEAKING_FLUENCY.md)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
@@ -192,6 +193,7 @@ console.log(assessment.cefr, assessment.score, assessment.framework_bands);
 
 Rubrics and samples live under `data/`. Extend by adding rubric JSON + samples, then register in `nokaman.rubrics.registry`.
 See [docs/LANGUAGES.md](docs/LANGUAGES.md) for the supported language catalog, CEFR/JLPT/TOPIK/HSK mappings, and language-pack extension steps.
+See [docs/SPEAKING_FLUENCY.md](docs/SPEAKING_FLUENCY.md) for the transcript-only speaking rubric and its limitations.
 
 | Code | Typical use |
 | --- | --- |
