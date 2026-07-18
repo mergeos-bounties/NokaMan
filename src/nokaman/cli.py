@@ -521,3 +521,96 @@ def serve_cmd(
 
 if __name__ == "__main__":
     app()
+@eval_app.command("score")
+def eval_score(
+    path: Path = typer.Argument(..., exists=True, dir_okay=False, help="Path to sample JSON file"),
+    table: bool = typer.Option(True, "--table/--no-table", help="Show rich table output"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """Score a single sample and display detailed dimension table."""
+    from nokaman.data.loader import load_sample
+    from nokaman.eval.pipeline import evaluate_sample_file
+    from nokaman.rubrics.speaking_fluency import score_speaking_fluency
+
+    sample = load_sample(path)
+    skill = str(sample.get("skill") or "writing").lower()
+    
+    # For speaking samples with fluency observations, compute detailed dimensions
+    if skill == "speaking":
+        fluency_observations = sample.get("fluency_observations") or {}
+        if fluency_observations:
+            # Score using the speaking fluency rubric
+            result = score_speaking_fluency(
+                str(sample.get("text") or ""),
+                duration_seconds=float(fluency_observations.get("duration_seconds")) if fluency_observations.get("duration_seconds") else None,
+                pause_count=int(fluency_observations.get("pause_count")) if fluency_observations.get("pause_count") else None,
+                filler_count=int(fluency_observations.get("filler_count")) if fluency_observations.get("filler_count") else None,
+            )
+            result.update({
+                "language": sample.get("language"),
+                "skill": "speaking",
+                "cefr": sample.get("cefr"),
+                "expected_cefr": sample.get("expected_cefr"),
+            })
+        else:
+            # Fallback to regular evaluation
+            result = evaluate_sample_file(path)
+    else:
+        result = evaluate_sample_file(path)
+
+    if json_output:
+        _print_json(data=result)
+        return
+
+    # Display rich table for speaking samples with dimensions
+    if skill == "speaking" and result.get("dimensions"):
+        from rich.table import Table
+        dimensions = result.get("dimensions") or {}
+        observations = result.get("observations") or {}
+        limitations = result.get("limitations") or []
+
+        table_obj = Table(title=f"Score Details: {path.name}")
+        table_obj.add_column("Dimension", style="bold")
+        table_obj.add_column("Score", style="cyan")
+        table_obj.add_column("Weight", style="magenta")
+        table_obj.add_column("Observation", style="green")
+
+        # Add overall score
+        table_obj.add_row(
+            "Overall Score",
+            str(result.get("score", "N/A")),
+            "1.00",
+            "Weighted average of all dimensions"
+        )
+
+        # Add dimension scores
+        weights = {
+            "pace": 0.30,
+            "continuity": 0.30,
+            "filler_control": 0.20,
+            "phrase_length": 0.20,
+        }
+        
+        for dim_name in sorted(dimensions.keys()):
+            dim_score = dimensions.get(dim_name)
+            weight = weights.get(dim_name, 0.0)
+            obs_val = str(observations.get(dim_name) or "")
+            table_obj.add_row(
+                dim_name.replace("_", " ").title(),
+                str(dim_score),
+                f"{weight:.2f}",
+                obs_val
+            )
+
+        console.print(table_obj)
+        
+        # Show limitations if present
+        if limitations:
+            console.print("\n[dim]Limitations:[/dim]")
+            for lim in limitations:
+                console.print(f"  • {lim}")
+    else:
+        # For non-speaking samples or JSON output, just print the result
+        _print_json(data=result)
+
+
