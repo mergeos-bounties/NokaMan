@@ -1,0 +1,57 @@
+{
+  "id": "ko_placement",
+  "language": "ko",
+  "skill": "placement",
+  "prompts": [
+    {
+      "id": "1",
+      "text": "당신의 취미는 무엇입니까? 왜 그 취미를 좋아합니까?",
+      "skill": "writing",
+      "cefr": "A1"
+    },
+    {
+      "id": "2",
+      "text": "이번 주말 계획에 대해 간단히 쓰세요.",
+      "skill": "writing",
+      "cefr": "A2"
+    },
+    {
+      "id": "3",
+      "text": "면접 준비를 어떻게 해야 하는지 설명하세요.",
+      "skill": "writing",
+      "cefr": "B1"
+    },
+    {
+      "id": "4",
+      "text": "대도시와 소도시의 장단점을 비교하세요.",
+      "skill": "writing",
+      "cefr": "B2"
+    },
+    {
+      "id": "5",
+      "text": "사회에서 교육의 중요성에 대해 에세이를 쓰세요.",
+      "skill": "writing",
+      "cefr": "C1"
+    }
+  ],
+  "scoring": {
+    "method": "weighted_average",
+    "weights": {
+      "A1": 0.2,
+      "A2": 0.2,
+      "B1": 0.2,
+      "B2": 0.2,
+      "C1": 0.2
+    }
+  },
+  "report": {
+    "format": "json",
+    "fields": [
+      "language",
+      "overall_score",
+      "cefr_level",
+      "framework_bands",
+      "detailed_scores"
+    ]
+  }
+}

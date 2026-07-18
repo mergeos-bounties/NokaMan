@@ -1,0 +1,57 @@
+{
+  "id": "ja_placement",
+  "language": "ja",
+  "skill": "placement",
+  "prompts": [
+    {
+      "id": "1",
+      "text": "あなたの趣味は何ですか。なぜその趣味が好きですか。",
+      "skill": "writing",
+      "cefr": "A1"
+    },
+    {
+      "id": "2",
+      "text": "今週末の予定について簡単に書いてください。",
+      "skill": "writing",
+      "cefr": "A2"
+    },
+    {
+      "id": "3",
+      "text": "就職面接の準備をどのように行うべきか説明してください。",
+      "skill": "writing",
+      "cefr": "B1"
+    },
+    {
+      "id": "4",
+      "text": "大都市と小都市の長所と短所を比較してください。",
+      "skill": "writing",
+      "cefr": "B2"
+    },
+    {
+      "id": "5",
+      "text": "社会における教育の重要性についてエッセイを書いてください。",
+      "skill": "writing",
+      "cefr": "C1"
+    }
+  ],
+  "scoring": {
+    "method": "weighted_average",
+    "weights": {
+      "A1": 0.2,
+      "A2": 0.2,
+      "B1": 0.2,
+      "B2": 0.2,
+      "C1": 0.2
+    }
+  },
+  "report": {
+    "format": "json",
+    "fields": [
+      "language",
+      "overall_score",
+      "cefr_level",
+      "framework_bands",
+      "detailed_scores"
+    ]
+  }
+}

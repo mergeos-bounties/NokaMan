@@ -11,7 +11,7 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric, load_sample
+from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric, load_sample, list_placement_files, load_placement_pack
 from nokaman.eval.metrics import _compute_band_accuracy_metrics, batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
@@ -38,6 +38,8 @@ app.add_typer(eval_app, name="eval")
 session_app = typer.Typer(help="Adaptive quiz session (state machine)")
 app.add_typer(session_app, name="session")
 app.add_typer(train_app, name="train")
+placement_app = typer.Typer(help="Placement test packs")
+app.add_typer(placement_app, name="placement")
 console = Console()
 
 
@@ -521,6 +523,114 @@ def serve_cmd(
 
 if __name__ == "__main__":
     app()
+
+
+# ── placement commands ─────────────────────────────────────────
+
+
+@placement_app.command("list")
+def placement_list() -> None:
+    """List available placement test packs."""
+    files = list_placement_files()
+    if not files:
+        console.print("[yellow]No placement packs found[/yellow]")
+        raise typer.Exit()
+    table = Table(title="Placement Test Packs")
+    table.add_column("ID")
+    table.add_column("Language")
+    table.add_column("Prompts")
+    for path in files:
+        pack = load_placement_pack(path)
+        table.add_row(str(pack.get("id")), str(pack.get("language")), str(len(pack.get("prompts", []))))
+    console.print(table)
+
+
+@placement_app.command("show")
+def placement_show(
+    pack_id: str = typer.Argument(..., help="Placement pack ID (e.g., en_placement)"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """Show details of a placement test pack."""
+    files = list_placement_files()
+    pack_path = None
+    for path in files:
+        if path.stem == pack_id:
+            pack_path = path
+            break
+    if not pack_path:
+        console.print(f"[red]Pack '{pack_id}' not found[/red]")
+        raise typer.Exit(code=1)
+    
+    pack = load_placement_pack(pack_path)
+    if json_output:
+        _print_json(data=pack)
+        return
+    
+    console.print(f"[bold]{pack.get('id')}[/bold] ({pack.get('language')})")
+    console.print(f"Skill: {pack.get('skill')}")
+    console.print(f"Prompts: {len(pack.get('prompts', []))}")
+    
+    if pack.get('prompts'):
+        table = Table(title="Prompts")
+        table.add_column("ID")
+        table.add_column("Text")
+        table.add_column("CEFR")
+        for prompt in pack.get('prompts', [])[:10]:
+            table.add_row(str(prompt.get('id')), str(prompt.get('text')[:60]), str(prompt.get('cefr')))
+        console.print(table)
+
+
+@placement_app.command("run")
+def placement_run(
+    pack_id: str = typer.Argument(..., help="Placement pack ID (e.g., en_placement)"),
+    answers: list[str] = typer.Argument(..., help="Answer text for each prompt"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """Run a placement test with provided answers."""
+    files = list_placement_files()
+    pack_path = None
+    for path in files:
+        if path.stem == pack_id:
+            pack_path = path
+            break
+    if not pack_path:
+        console.print(f"[red]Pack '{pack_id}' not found[/red]")
+        raise typer.Exit(code=1)
+    
+    pack = load_placement_pack(pack_path)
+    language = pack.get('language', 'en')
+    
+    if len(answers) != len(pack.get('prompts', [])):
+        console.print(f"[yellow]Warning: Expected {len(pack.get('prompts', []))} answers, got {len(answers)}[/yellow]")
+    
+    result = placement_test(language, answers)
+    
+    if json_output:
+        _print_json(data=result)
+        return
+    
+    console.print(f"[bold]Placement Test Results[/bold]")
+    console.print(f"Language: {result.get('language')}")
+    console.print(f"Items: {result.get('n_items')}")
+    console.print(f"Overall Score: {result.get('overall')}")
+    console.print(f"CEFR Level: {result.get('cefr')}")
+    
+    if result.get('items'):
+        table = Table(title="Item Details")
+        table.add_column("Item")
+        table.add_column("Text")
+        table.add_column("Score")
+        table.add_column("CEFR")
+        for item in result.get('items', [])[:10]:
+            table.add_row(
+                str(item.get('item')),
+                str(item.get('text')[:50]),
+                str(item.get('overall')),
+                str(item.get('cefr'))
+            )
+        console.print(table)
+    
+    console.print(f"[dim]Ready for UI: {result.get('ready_for_ui')}[/dim]")
 @eval_app.command("score")
 def eval_score(
     path: Path = typer.Argument(..., exists=True, dir_okay=False, help="Path to sample JSON file"),
