@@ -1,0 +1,29 @@
+[
+  {
+    "id": "speaking_a2_01",
+    "level": "A2",
+    "skill": "speaking",
+    "topic": "Daily Routine",
+    "transcript": "I wake up at 7 AM. I brush my teeth and eat breakfast. Then I go to school.",
+    "expected_cefr": "A2",
+    "duration_seconds": 45
+  },
+  {
+    "id": "speaking_b1_01",
+    "level": "B1",
+    "skill": "speaking",
+    "topic": "Travel Experience",
+    "transcript": "Last summer I visited Barcelona. The weather was beautiful and the food was delicious.",
+    "expected_cefr": "B1",
+    "duration_seconds": 60
+  },
+  {
+    "id": "speaking_b2_01",
+    "level": "B2",
+    "skill": "speaking",
+    "topic": "Technology Impact",
+    "transcript": "Technology has fundamentally transformed how we communicate and work.",
+    "expected_cefr": "B2",
+    "duration_seconds": 75
+  }
+]
