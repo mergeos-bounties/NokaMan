@@ -266,6 +266,53 @@ def eval_batch(
     console.print(f"Report: {out_path}")
 
 
+@eval_app.command("score")
+def eval_score(
+    sample: Path = typer.Argument(..., exists=True, dir_okay=False, help="Path to sample JSON file"),
+    table: bool = typer.Option(True, "--table/--json-only"),
+) -> None:
+    """Score a single sample file and print dimension breakdown via rich."""
+    from rich.panel import Panel
+    result = evaluate_sample_file(sample)
+    
+    if not table:
+        _print_json(data=result)
+        return
+
+    # Build dimension table
+    dim_table = Table(title=f"Score breakdown: {sample.name}", show_header=True, header_style="bold cyan")
+    dim_table.add_column("Dimension", style="bold")
+    dim_table.add_column("Value", justify="right")
+    
+    # Core score info
+    score = result.get("score", 0)
+    cefr = result.get("cefr", "?")
+    skill = result.get("skill", "?")
+    lang = result.get("language", "?")
+    
+    dim_table.add_row("Language", str(lang))
+    dim_table.add_row("Skill", str(skill))
+    dim_table.add_row("Overall Score", f"{score:.3f}")
+    dim_table.add_row("CEFR Band", str(cefr))
+    
+    # Dimension scores
+    dims = result.get("dimensions") or {}
+    for dim, val in sorted(dims.items()):
+        dim_table.add_row(str(dim), f"{float(val):.3f}" if val else "N/A")
+    
+    console.print(dim_table)
+    
+    # Band check if expected was in sample
+    if "band_check" in result:
+        check = result["band_check"]
+        status = "[green]✓ exact[/green]" if check == "exact" else \
+                 "[yellow]~ adjacent[/yellow]" if check == "adjacent" else \
+                 "[red]✗ miss[/red]"
+        console.print(f"Band check: {status} (expected: {result.get('expected_cefr', '?')})")
+    
+    console.print(f"[dim]Source: {sample}[/dim]")
+
+
 @eval_app.command("summary")
 def eval_summary() -> None:
     """Compact inventory of samples + batch metrics."""
