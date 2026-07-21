@@ -16,7 +16,45 @@
     },
     "writing": {
       "weight": 1.2,
-      "notes": "English writing descriptor"
+      "notes": "English writing descriptor",
+      "dimensions": {
+        "cohesion_coherence": {
+          "weight": 1.0,
+          "notes": "Use of cohesive devices (conjunctions, reference words, ellipsis, lexical cohesion) to create logical progression and unity of text",
+          "criteria": {
+            "C2": "Uses a wide range of cohesive devices with full naturalness and effectiveness; text is cohesive throughout",
+            "C1": "Uses cohesive devices effectively; appropriate paragraphing; text is cohesive and coherent throughout",
+            "B2": "Uses a range of cohesive devices; generally well-organized; may have some lapses",
+            "B1": "Uses some basic cohesive devices; generally organized but may lack overall progression",
+            "A2": "Uses limited cohesive devices; may be repetitive; organization may not be clear",
+            "A1": "Uses little or no cohesive devices; text may be difficult to follow"
+          }
+        },
+        "vocabulary_writing": {
+          "weight": 1.0,
+          "notes": "Range and accuracy of vocabulary",
+          "criteria": {
+            "C2": "Wide range of vocabulary used precisely; no errors",
+            "C1": "Wide range of vocabulary for most topics; occasional inaccuracies",
+            "B2": "Sufficient range for clear communication; some word choice errors",
+            "B1": "Limited range but can convey meaning; frequent errors",
+            "A2": "Basic vocabulary; frequent errors cause misunderstanding",
+            "A1": "Very limited vocabulary; communication barely possible"
+          }
+        },
+        "grammar_writing": {
+          "weight": 1.0,
+          "notes": "Grammatical accuracy",
+          "criteria": {
+            "C2": "Consistent control of complex structures; no errors",
+            "C1": "Good control of complex structures; occasional errors",
+            "B2": "Good control of simple structures; some complex attempts; few errors",
+            "B1": "Uses simple structures appropriately; some errors but communication clear",
+            "A2": "Uses some simple structures correctly; frequent errors",
+            "A1": "Very limited control of structures; constant errors"
+          }
+        }
+      }
     },
     "listening": {
       "weight": 1.0,
