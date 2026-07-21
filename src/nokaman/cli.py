@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 from typing import Optional
@@ -11,10 +12,11 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
-from nokaman.eval.metrics import batch_evaluate, placement_test
+from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric, load_sample, list_placement_files, load_placement_pack
+from nokaman.eval.metrics import _compute_band_accuracy_metrics, batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
+from nokaman.models.cefr import cefr_rank
 from nokaman.rubrics.registry import (
     SKILLS,
     SUPPORTED_LANGUAGES,
@@ -37,6 +39,8 @@ app.add_typer(eval_app, name="eval")
 session_app = typer.Typer(help="Adaptive quiz session (state machine)")
 app.add_typer(session_app, name="session")
 app.add_typer(train_app, name="train")
+placement_app = typer.Typer(help="Placement test packs")
+app.add_typer(placement_app, name="placement")
 console = Console()
 
 
@@ -240,30 +244,54 @@ def eval_samples() -> None:
 def eval_batch(
     out: Optional[Path] = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
+    format: str = typer.Option("json", "--format", "-f", help="Output format: json, csv, or table"),
 ) -> None:
     report = batch_evaluate()
     out_path = out or (RUNS_DIR / "batch_eval.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    console.print(
-        f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
-        f"adjacent={report['adjacent_cefr_hit_rate']}"
-    )
-    if table and report.get("by_language"):
-        t = Table(title="By language")
-        t.add_column("Lang")
-        t.add_column("n")
-        t.add_column("exact")
-        t.add_column("adjacent")
-        for lang, row in sorted((report.get("by_language") or {}).items()):
-            t.add_row(
-                str(lang),
-                str(row.get("n") or row.get("n_samples") or ""),
-                str(row.get("exact_cefr_hit_rate", row.get("exact", ""))),
-                str(row.get("adjacent_cefr_hit_rate", row.get("adjacent", ""))),
-            )
-        console.print(t)
-    console.print(f"Report: {out_path}")
+    
+    if format == "json":
+        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        console.print(f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} adjacent={report['adjacent_cefr_hit_rate']}")
+        console.print(f"Report: {out_path}")
+    elif format == "csv":
+        # Change extension to .json -> batch_csv_path = out_path = out_path.with_suffix('.csv') if out_path.suffix == '.json' else out_path
+        csv_path = out_path.with_suffix('.csv') if str(out_path).endswith('.json') else out_path
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Write CSV from the rows data
+        with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+            if report.get('rows'):
+                fieldnames = ['file', 'language', 'skill', 'score', 'cefr', 'expected_cefr', 'distance']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                for row in report['rows']:
+                    # Only write rows that have the expected fields
+                    filtered_row = {k: row.get(k, '') for k in fieldnames}
+                    writer.writerow(filtered_row)
+        
+        console.print(f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} adjacent={report['adjacent_cefr_hit_rate']}")
+        console.print(f"Report: {csv_path}")
+    else:  # table format (default)
+        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        console.print(
+            f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} adjacent={report['adjacent_cefr_hit_rate']}"
+        )
+        if table and report.get("by_language"):
+            t = Table(title="By language")
+            t.add_column("Lang")
+            t.add_column("n")
+            t.add_column("exact")
+            t.add_column("adjacent")
+            for lang, row in sorted((report.get("by_language") or {}).items()):
+                t.add_row(
+                    str(lang),
+                    str(row.get("n") or row.get("n_samples") or ""),
+                    str(row.get("exact_cefr_hit_rate", row.get("exact", ""))),
+                    str(row.get("adjacent_cefr_hit_rate", row.get("adjacent", ""))),
+                )
+            console.print(t)
+        console.print(f"Report: {out_path}")
 
 
 @eval_app.command("summary")
@@ -285,6 +313,110 @@ def eval_summary() -> None:
             "adjacent_cefr_hit_rate": report.get("adjacent_cefr_hit_rate"),
         }
     )
+
+
+@eval_app.command("report")
+def eval_report(
+    table: bool = typer.Option(True, "--table/--no-table"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """Eval metrics report: band accuracy, adjacent accuracy, MAE on score."""
+    from rich.progress import track
+
+    files = list_sample_files()
+    if not files:
+        console.print("[yellow]No samples found[/yellow]")
+        raise typer.Exit()
+
+    rows = []
+    for path in track(files, description="Evaluating..."):
+        sample = load_sample(path)
+        result = evaluate_sample_file(path)
+        cefr_pred = str(result.get("cefr") or "").upper()
+        cefr_exp = str(sample.get("expected_cefr") or "").upper()
+        dist = None
+        if cefr_exp:
+            dist = abs(cefr_rank(cefr_pred) - cefr_rank(cefr_exp))
+        rows.append(
+            {
+                "file": path.name,
+                "language": result.get("language"),
+                "skill": result.get("skill"),
+                "score": result.get("score"),
+                "cefr": result.get("cefr"),
+                "expected_cefr": sample.get("expected_cefr"),
+                "distance": dist,
+            }
+        )
+
+    # Compute aggregate metrics
+    metrics = _compute_band_accuracy_metrics(rows)
+
+    report_data = {
+        "version": __version__,
+        "n_samples": len(files),
+        "n_labeled": metrics["n_labeled"],
+        "exact_cefr_hit_rate": metrics["exact_cefr_hit_rate"],
+        "adjacent_cefr_hit_rate": metrics["adjacent_cefr_hit_rate"],
+        "mae_on_score": metrics["mae_on_score"],
+        "by_language": {},
+    }
+
+    # Per-language breakdown
+    by_lang: dict[str, list] = {}
+    for row in rows:
+        lang = str(row.get("language") or "?")
+        by_lang.setdefault(lang, []).append(row)
+
+    for lang, lang_rows in sorted(by_lang.items()):
+        lang_metrics = _compute_band_accuracy_metrics(lang_rows)
+        report_data["by_language"][lang] = lang_metrics
+
+    if json_output:
+        _print_json(data=report_data)
+        return
+
+    # Pretty table output
+    overall_table = Table(title="NokaMan Eval Report — Overall")
+    overall_table.add_column("Metric", style="bold")
+    overall_table.add_column("Value", justify="right")
+    overall_table.add_row("Samples", str(len(files)))
+    overall_table.add_row("Labeled", str(metrics["n_labeled"]))
+    exact_rate = metrics["exact_cefr_hit_rate"]
+    overall_table.add_row(
+        "Exact CEFR Hit Rate",
+        f"{exact_rate:.1%}" if exact_rate is not None else "N/A",
+    )
+    adj_rate = metrics["adjacent_cefr_hit_rate"]
+    overall_table.add_row(
+        "Adjacent CEFR Hit Rate",
+        f"{adj_rate:.1%}" if adj_rate is not None else "N/A",
+    )
+    mae = metrics["mae_on_score"]
+    overall_table.add_row(
+        "MAE (CEFR rank)",
+        f"{mae:.4f}" if mae is not None else "N/A",
+    )
+    console.print(overall_table)
+
+    if report_data["by_language"]:
+        lang_table = Table(title="By Language")
+        lang_table.add_column("Language", style="bold")
+        lang_table.add_column("n", justify="right")
+        lang_table.add_column("Labeled", justify="right")
+        lang_table.add_column("Exact", justify="right")
+        lang_table.add_column("Adjacent", justify="right")
+        lang_table.add_column("MAE", justify="right")
+        for lang, m in sorted(report_data["by_language"].items()):
+            lang_table.add_row(
+                str(lang),
+                str(len(by_lang.get(lang, []))),
+                str(m["n_labeled"]),
+                f"{m['exact_cefr_hit_rate']:.1%}" if m["exact_cefr_hit_rate"] is not None else "—",
+                f"{m['adjacent_cefr_hit_rate']:.1%}" if m["adjacent_cefr_hit_rate"] is not None else "—",
+                f"{m['mae_on_score']:.4f}" if m["mae_on_score"] is not None else "—",
+            )
+        console.print(lang_table)
 
 
 @eval_app.command("placement")
@@ -389,30 +521,3 @@ def session_end(
     mgr = SessionManager(language=lang, session_id=session_id)
     result = mgr.end()
     _print_json(data=result)
-
-
-@app.command("gui")
-def gui_cmd() -> None:
-    """Launch modern Qt desktop demo (pip install -e '.[gui]')."""
-    from nokaman.gui.app import main as gui_main
-
-    raise SystemExit(gui_main())
-
-
-@app.command("serve")
-def serve_cmd(
-    host: str = typer.Option("127.0.0.1", "--host"),
-    port: int = typer.Option(8767, "--port", min=1, max=65535),
-) -> None:
-    """Run FastAPI (pip install -e '.[api]')."""
-    try:
-        import uvicorn
-    except ImportError as exc:
-        console.print('[red]Install:[/red] pip install -e ".[api]"')
-        raise typer.Exit(1) from exc
-    console.print(f"Serving http://{host}:{port}/health")
-    uvicorn.run("nokaman.api.app:app", host=host, port=port, log_level="info")
-
-
-if __name__ == "__main__":
-    app()

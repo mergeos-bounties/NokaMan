@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from nokaman.config import LISTENING_DIR, RUBRICS_DIR, SAMPLES_DIR
+from nokaman.config import LISTENING_DIR, PLACEMENT_DIR, RUBRICS_DIR, SAMPLES_DIR
 
 
 def list_sample_files(directory: Path | None = None) -> list[Path]:
@@ -54,4 +54,22 @@ def load_rubric(path: Path) -> dict:
     payload = load_json(path)
     payload.setdefault("language", path.stem)
     payload.setdefault("skills", {})
+    return payload
+
+
+def list_placement_files(directory: Path | None = None) -> list[Path]:
+    root = directory or PLACEMENT_DIR
+    if not root.exists():
+        return []
+    return sorted(root.glob("*.json"))
+
+
+def load_placement_pack(path: Path) -> dict:
+    payload = load_json(path)
+    payload.setdefault("id", path.stem)
+    payload.setdefault("language", "en")
+    payload.setdefault("skill", "placement")
+    payload.setdefault("prompts", [])
+    payload.setdefault("scoring", {})
+    payload.setdefault("report", {})
     return payload

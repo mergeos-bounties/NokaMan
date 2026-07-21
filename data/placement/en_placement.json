@@ -1,0 +1,57 @@
+{
+  "id": "en_placement",
+  "language": "en",
+  "skill": "placement",
+  "prompts": [
+    {
+      "id": "1",
+      "text": "Describe your favorite hobby and why you enjoy it.",
+      "skill": "writing",
+      "cefr": "A1"
+    },
+    {
+      "id": "2",
+      "text": "Write a short paragraph about your weekend plans.",
+      "skill": "writing",
+      "cefr": "A2"
+    },
+    {
+      "id": "3",
+      "text": "Explain how you would prepare for a job interview.",
+      "skill": "writing",
+      "cefr": "B1"
+    },
+    {
+      "id": "4",
+      "text": "Discuss the advantages and disadvantages of living in a big city versus a small town.",
+      "skill": "writing",
+      "cefr": "B2"
+    },
+    {
+      "id": "5",
+      "text": "Write an essay about the importance of education in your society.",
+      "skill": "writing",
+      "cefr": "C1"
+    }
+  ],
+  "scoring": {
+    "method": "weighted_average",
+    "weights": {
+      "A1": 0.2,
+      "A2": 0.2,
+      "B1": 0.2,
+      "B2": 0.2,
+      "C1": 0.2
+    }
+  },
+  "report": {
+    "format": "json",
+    "fields": [
+      "language",
+      "overall_score",
+      "cefr_level",
+      "framework_bands",
+      "detailed_scores"
+    ]
+  }
+}

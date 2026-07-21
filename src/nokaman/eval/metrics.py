@@ -7,6 +7,37 @@ from nokaman.eval.pipeline import evaluate_sample_file
 from nokaman.models.cefr import cefr_rank
 
 
+def _compute_band_accuracy_metrics(
+    rows: list[dict],
+) -> dict:
+    """Compute accuracy metrics across labeled rows (rows with expected_cefr)."""
+    labeled = [r for r in rows if r.get("expected_cefr")]
+    if not labeled:
+        return {
+            "n_labeled": 0,
+            "exact_cefr_hit_rate": None,
+            "adjacent_cefr_hit_rate": None,
+            "mae_on_score": None,
+        }
+
+    exact = sum(1 for r in labeled if r.get("distance", -1) == 0)
+    adjacent = sum(1 for r in labeled if r.get("distance", -1) <= 1)
+
+    # MAE on score: mean absolute error of predicted CEFR rank vs expected CEFR rank
+    mae = None
+    if labeled:
+        errors = [abs(r["distance"]) for r in labeled if "distance" in r]
+        if errors:
+            mae = round(sum(errors) / len(errors), 4)
+
+    return {
+        "n_labeled": len(labeled),
+        "exact_cefr_hit_rate": round(exact / len(labeled), 4),
+        "adjacent_cefr_hit_rate": round(adjacent / len(labeled), 4),
+        "mae_on_score": mae,
+    }
+
+
 def batch_evaluate(sample_dir: Path | None = None) -> dict:
     files = list_sample_files(sample_dir) if sample_dir else list_sample_files()
     rows = []
