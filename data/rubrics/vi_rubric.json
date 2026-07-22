@@ -1,0 +1,43 @@
+{
+  "language": "vi",
+  "name": "Vietnamese",
+  "meta": {
+    "iso": "vi",
+    "native": "Tieng Viet",
+    "cefr_steps": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1",
+      "C2"
+    ]
+  },
+  "skills": {
+    "writing": {
+      "description": "Kha nang viet tieng Viet",
+      "dimensions": [
+        {
+          "name": "grammar",
+          "weight": 0.3,
+          "description": "Do chinh xac ngu phap"
+        },
+        {
+          "name": "vocabulary",
+          "weight": 0.25,
+          "description": "Do phong phu va phu hop tu vung"
+        },
+        {
+          "name": "coherence",
+          "weight": 0.25,
+          "description": "Mach lac va to chuc bai viet"
+        },
+        {
+          "name": "task_completion",
+          "weight": 0.2,
+          "description": "Dap ung yeu cau cua de bai"
+        }
+      ]
+    }
+  }
+}
