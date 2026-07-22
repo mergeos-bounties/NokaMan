@@ -1,0 +1,26 @@
+[
+  {
+    "text": "Hola, me llamo Carlos. Soy de Mexico. Estudio ingles.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "es"
+  },
+  {
+    "text": "Ayer fui al cine con mis amigos. La pelicula era muy divertida. Comimos palomitas.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "es"
+  },
+  {
+    "text": "Aunque el espanol es mi idioma nativo, me esfuerzo por mejorar mi escritura formal. La ortografia puede ser desafiante a veces.",
+    "skill": "writing",
+    "expected_cefr": "B1",
+    "language": "es"
+  },
+  {
+    "text": "El impacto del cambio climatico en America Latina es particularmente severo. Las sequias prolongadas y los fenomenos meteorologicos extremos afectan desproporcionadamente a las comunidades mas vulnerables.",
+    "skill": "writing",
+    "expected_cefr": "B2",
+    "language": "es"
+  }
+]
