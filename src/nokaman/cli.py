@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 from typing import Optional
@@ -237,35 +238,45 @@ def eval_samples() -> None:
 
 
 @eval_app.command("batch")
-def eval_batch(
+@eval_app.command("batch")
+
     out: Optional[Path] = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
+    fmt: str = typer.Option("json", "--format", help="Output format: json or csv"),
 ) -> None:
     report = batch_evaluate()
     out_path = out or (RUNS_DIR / "batch_eval.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    console.print(
-        f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
-        f"adjacent={report['adjacent_cefr_hit_rate']}"
-    )
-    if table and report.get("by_language"):
-        t = Table(title="By language")
-        t.add_column("Lang")
-        t.add_column("n")
-        t.add_column("exact")
-        t.add_column("adjacent")
-        for lang, row in sorted((report.get("by_language") or {}).items()):
-            t.add_row(
-                str(lang),
-                str(row.get("n") or row.get("n_samples") or ""),
-                str(row.get("exact_cefr_hit_rate", row.get("exact", ""))),
-                str(row.get("adjacent_cefr_hit_rate", row.get("adjacent", ""))),
+    if fmt == "csv":
+        csv_path = out_path.with_suffix(".csv")
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["file","language","skill","score","cefr","expected_cefr","distance"])
+            writer.writeheader()
+            for row in report.get("rows", []):
+                writer.writerow({k: row.get(k, "") for k in writer.fieldnames})
+        console.print(f"[green]batch[/green] CSV written to {csv_path}")
+    else:
+        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        console.print(
+            f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
+            f"adjacent={report['adjacent_cefr_hit_rate']}"
+        )
+    if table:
+        lang_table = Table(title=f"By language ({report['n_samples']} samples)")
+        lang_table.add_column("Language")
+        lang_table.add_column("Samples")
+        lang_table.add_column("Labeled")
+        lang_table.add_column("Exact Hit")
+        lang_table.add_column("Adjacent Hit")
+        for lang, bucket in report.get("by_language", {}).items():
+            lang_table.add_row(
+                lang,
+                str(bucket["n"]),
+                str(bucket["labeled"]),
+                f"{bucket.get('exact_cefr_hit_rate', 'N/A')}",
+                f"{bucket.get('adjacent_cefr_hit_rate', 'N/A')}",
             )
-        console.print(t)
-    console.print(f"Report: {out_path}")
-
-
+        console.print(lang_table)
 @eval_app.command("summary")
 def eval_summary() -> None:
     """Compact inventory of samples + batch metrics."""
