@@ -1,0 +1,26 @@
+[
+  {
+    "text": "Toi la sinh vien. Toi hoc tieng Anh moi ngay.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "vi"
+  },
+  {
+    "text": "Hom qua toi di cho voi me. Toi mua trai cay va rau. Hom nay troi dep.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "vi"
+  },
+  {
+    "text": "Toi rat thich doc sach, dac biet la tieu thuyet. Toi thuong doc vao buoi toi truoc khi di ngu.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "vi"
+  },
+  {
+    "text": "Van de moi truong dang ngay cang nghiem trong. Chung ta can co nhung bien phap bao ve moi truong song chung.",
+    "skill": "writing",
+    "expected_cefr": "B1",
+    "language": "vi"
+  }
+]
