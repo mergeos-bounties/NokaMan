@@ -1,0 +1,122 @@
+[
+  {
+    "text": "I go to school every day. I like my teacher.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "en"
+  },
+  {
+    "text": "My name is Maria. I am from Spain. I have one brother.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "en"
+  },
+  {
+    "text": "Yesterday I went to the park with my friends. We played football and ate sandwiches.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "en"
+  },
+  {
+    "text": "I have been studying English for two years. I can read simple books and write short emails.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "en"
+  },
+  {
+    "text": "Although I find grammar challenging, I enjoy practicing with native speakers. My pronunciation has improved significantly this semester.",
+    "skill": "writing",
+    "expected_cefr": "B1",
+    "language": "en"
+  },
+  {
+    "text": "The main advantage of remote work is flexibility. However, it requires strong self-discipline and time management skills to maintain productivity.",
+    "skill": "writing",
+    "expected_cefr": "B1",
+    "language": "en"
+  },
+  {
+    "text": "The implementation of renewable energy policies varies significantly across different regions. While some countries have achieved notable progress, others face substantial infrastructural and economic barriers to transitioning away from fossil fuels.",
+    "skill": "writing",
+    "expected_cefr": "B2",
+    "language": "en"
+  },
+  {
+    "text": "The correlation between socioeconomic status and educational attainment has been extensively documented. Addressing these disparities requires a multifaceted approach that takes into account both institutional barriers and cultural factors influencing academic engagement.",
+    "skill": "writing",
+    "expected_cefr": "B2",
+    "language": "en"
+  },
+  {
+    "text": "Jeoneun haksaengimnida. Hangukeul gongbuhamnida.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "ko"
+  },
+  {
+    "text": "Naneun eoje chingugwa gongwon-e gassseumnida. Jal hangsseumnida.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "ko"
+  },
+  {
+    "text": "Watashi wa gakusei desu. Mainichi nihongo o benkyou shimasu.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "ja"
+  },
+  {
+    "text": "Kinoo tomodachi to eiga o mimashita. Eiga wa omoshirokatta desu.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "ja"
+  },
+  {
+    "text": "Watashi wa ryokou ga daisuki desu. Rainen kankoku ni ikitai desu.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "ja"
+  },
+  {
+    "text": "Watashi no shumi wa hon o yomu koto desu. Tokuni mystery ga suki desu.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "ja"
+  },
+  {
+    "text": "The experiment yielded unexpected results that challenged our initial hypothesis. Further investigation revealed methodological factors that may have influenced the outcome.",
+    "skill": "writing",
+    "expected_cefr": "B2",
+    "language": "en"
+  },
+  {
+    "text": "I would like to apply for the position of junior developer. I have experience with Python and JavaScript, and I am eager to learn new technologies.",
+    "skill": "writing",
+    "expected_cefr": "B1",
+    "language": "en"
+  },
+  {
+    "text": "The city offers many attractions for tourists. You can visit museums, parks, and historical buildings. The food is also very good.",
+    "skill": "writing",
+    "expected_cefr": "A2",
+    "language": "en"
+  },
+  {
+    "text": "On weekends I usually wake up late. I have breakfast and then I go for a walk. In the afternoon I watch TV or read a book.",
+    "skill": "writing",
+    "expected_cefr": "A1",
+    "language": "en"
+  },
+  {
+    "text": "It is generally acknowledged that climate change represents one of the most pressing challenges of our time. International cooperation is essential to mitigate its effects and to facilitate adaptation in vulnerable regions.",
+    "skill": "writing",
+    "expected_cefr": "C1",
+    "language": "en"
+  },
+  {
+    "text": "The socioeconomic implications of automation extend beyond mere workforce displacement. Policymakers must carefully calibrate regulatory frameworks that balance technological innovation with social welfare considerations.",
+    "skill": "writing",
+    "expected_cefr": "C1",
+    "language": "en"
+  }
+]
