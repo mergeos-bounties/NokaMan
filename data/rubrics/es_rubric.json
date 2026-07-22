@@ -1,0 +1,43 @@
+{
+  "language": "es",
+  "name": "Spanish",
+  "meta": {
+    "iso": "es",
+    "native": "Espanol",
+    "cefr_steps": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1",
+      "C2"
+    ]
+  },
+  "skills": {
+    "writing": {
+      "description": "Ability to write texts in Spanish",
+      "dimensions": [
+        {
+          "name": "grammar",
+          "weight": 0.3,
+          "description": "Grammatical accuracy"
+        },
+        {
+          "name": "vocabulary",
+          "weight": 0.25,
+          "description": "Range and appropriateness of vocabulary"
+        },
+        {
+          "name": "coherence",
+          "weight": 0.25,
+          "description": "Logical organization and flow"
+        },
+        {
+          "name": "task_completion",
+          "weight": 0.2,
+          "description": "How well the task requirements are met"
+        }
+      ]
+    }
+  }
+}
