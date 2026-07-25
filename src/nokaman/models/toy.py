@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterable
 
 from nokaman.models.cefr import score_to_cefr
+from nokaman.models.jlpt import score_to_jlpt
 from nokaman.rubrics.registry import SKILLS, load_language_rubric
 
 
@@ -121,8 +122,8 @@ def _framework_bands(language: str, cefr: str, score: float) -> dict:
     """Map CEFR-style band to common regional exam labels (scaffold)."""
     lang = language.strip().lower()
     c = (cefr or "A1").upper()
-    # rough ladders for demo UX
-    jlpt = {"A1": "N5", "A2": "N4", "B1": "N3", "B2": "N2", "C1": "N1", "C2": "N1+"}.get(c, "N5")
+    # Rough ladders for demo UX.
+    jlpt = score_to_jlpt((score or 0) if score is not None else 0)
     topik = _topik_band(c)
     hsk = {"A1": "1", "A2": "2", "B1": "3", "B2": "4", "C1": "5", "C2": "6"}.get(c, "1")
     ielts = round(3.0 + (score / 100.0) * 6.0, 1)  # ~3.0–9.0
