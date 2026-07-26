@@ -219,6 +219,59 @@ def eval_demo(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     _print_json(data=evaluate_demo(lang))
 
 
+@eval_app.command("score")
+def eval_score(
+    sample: Path = typer.Option(
+        ...,
+        "--sample",
+        "-s",
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        help="Path to a sample file to evaluate.",
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON instead of table"),
+) -> None:
+    """Evaluate a single sample file and print dimension scores in a rich table."""
+    result = evaluate_sample_file(sample)
+    if json_output:
+        _print_json(data=result)
+        return
+
+    table = Table(title=f"Score: {sample.name}")
+    table.add_column("Dimension")
+    table.add_column("Value")
+    table.add_column("Detail")
+
+    table.add_row("Language", str(result.get("language", "")), "")
+    table.add_row("Skill", str(result.get("skill", "")), "")
+    table.add_row("Score", f"{result.get('score', '')}", "/ 100")
+    table.add_row("CEFR", str(result.get("cefr", "")), "")
+
+    features = result.get("features") or {}
+    if features:
+        table.add_section()
+        table.add_row("[bold]Features[/bold]", "", "")
+        for key, val in features.items():
+            table.add_row(f"  {key}", str(val), "")
+
+    framework_bands = result.get("framework_bands") or {}
+    if framework_bands:
+        table.add_section()
+        table.add_row("[bold]Framework Bands[/bold]", "", "")
+        for key, val in framework_bands.items():
+            table.add_row(f"  {key}", str(val), "")
+
+    band_check = result.get("band_check")
+    if band_check:
+        table.add_section()
+        table.add_row("Band Check", str(band_check), "")
+
+    console.print(table)
+    console.print(f"[dim]Source: {result.get('source', sample)}[/dim]")
+
+
 @eval_app.command("samples")
 def eval_samples() -> None:
     files = list_sample_files()

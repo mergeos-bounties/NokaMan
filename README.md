@@ -121,6 +121,56 @@ For a browser demo that talks to the local FastAPI app, see [`web/README.md`](we
 
 ## CLI reference
 
+```
+nokaman eval score --sample <path>       # Evaluate a single sample with rich table output
+nokaman eval score --sample <path> --json  # Raw JSON output
+nokaman eval samples                      # List all samples with scores
+nokaman eval text --text "..."            # Evaluate text input
+nokaman eval batch                        # Batch evaluation of all samples
+nokaman eval summary                      # Compact inventory + batch metrics
+nokaman eval placement -a "answer1" -a "answer2"  # Quick placement test
+nokaman languages list                    # Supported languages
+nokaman languages coverage                # Coverage by language + skill
+nokaman rubrics list                      # Available rubrics
+nokaman rubrics explain --lang en         # Rubric details
+nokaman session start                     # Start adaptive quiz
+nokaman train toy                         # Calibration training
+nokaman stats                             # Sample inventory
+nokaman version                           # Version info
+```
+
+### Score example
+
+```console
+$ nokaman eval score --sample data/samples/en_writing_a1.json
+Score: en_writing_a1.json
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Dimension       ┃ Value                                             ┃ Detail ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ Language        │ en                                                │        │
+│ Skill           │ writing                                           │        │
+│ Score           │ 48.27                                             │ / 100  │
+│ CEFR            │ A2                                                │        │
+├─────────────────┼───────────────────────────────────────────────────┼────────┤
+│ Features        │                                                   │        │
+│   tokens        │ 16                                                │        │
+│   unique_tokens │ 14                                                │        │
+│   avg_token_len │ 2.812                                             │        │
+│   script_bonus  │ 4.0                                               │        │
+│   connectors    │ 0                                                 │        │
+│   sentences     │ 5                                                 │        │
+├─────────────────┼───────────────────────────────────────────────────┼────────┤
+│ Framework Bands │                                                   │        │
+│   cefr          │ A2                                                │        │
+│   ielts_approx  │ 5.9                                               │        │
+│   toeic_approx  │ 537                                               │        │
+├─────────────────┼───────────────────────────────────────────────────┼────────┤
+│ Band Check      │ {'predicted': 'A2', 'expected': 'A1',             │        │
+│                 │ 'exact_match': False, 'distance': 1}              │        │
+└─────────────────┴───────────────────────────────────────────────────┴────────┘
+Source: data/samples/en_writing_a1.json
+```
+
 | Command | Purpose |
 | --- | --- |
 | `nokaman version` | Version + language codes |
