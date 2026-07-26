@@ -11,7 +11,12 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
+from nokaman.data.loader import (
+    filter_catalog,
+    list_sample_files,
+    list_rubric_files,
+    load_rubric,
+)
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
@@ -37,6 +42,8 @@ app.add_typer(eval_app, name="eval")
 session_app = typer.Typer(help="Adaptive quiz session (state machine)")
 app.add_typer(session_app, name="session")
 app.add_typer(train_app, name="train")
+samples_app = typer.Typer(help="Catalogued sample fixtures")
+app.add_typer(samples_app, name="samples")
 console = Console()
 
 
@@ -412,6 +419,41 @@ def serve_cmd(
         raise typer.Exit(1) from exc
     console.print(f"Serving http://{host}:{port}/health")
     uvicorn.run("nokaman.api.app:app", host=host, port=port, log_level="info")
+
+
+# ── samples commands ─────────────────────────────────────────
+
+def _print_samples_table(records: list[dict]) -> None:
+    if not records:
+        console.print("[yellow]No samples found[/yellow]")
+        return
+    table = Table(title=f"Samples ({len(records)})")
+    table.add_column("ID")
+    table.add_column("Lang")
+    table.add_column("Skill")
+    table.add_column("CEFR")
+    for r in records:
+        table.add_row(
+            str(r.get("id") or r.get("file", "?")),
+            str(r.get("language") or ""),
+            str(r.get("skill") or ""),
+            str(r.get("expected_cefr") or ""),
+        )
+    console.print(table)
+
+
+@samples_app.command("list")
+def samples_list(
+    language: Optional[str] = typer.Option(None, "--language", "-l", help="Filter by language code"),
+    skill: Optional[str] = typer.Option(None, "--skill", "-s", help="Filter by skill name"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    """List catalogued samples, optionally filtered by language and/or skill."""
+    records = filter_catalog(language=language, skill=skill)
+    if json_output:
+        console.print_json(data=records, ensure_ascii=True)
+        return
+    _print_samples_table(records)
 
 
 if __name__ == "__main__":
