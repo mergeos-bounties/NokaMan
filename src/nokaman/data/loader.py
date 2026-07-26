@@ -55,3 +55,38 @@ def load_rubric(path: Path) -> dict:
     payload.setdefault("language", path.stem)
     payload.setdefault("skills", {})
     return payload
+
+
+def catalog_samples(directory: Path | None = None) -> list[dict]:
+    """Return a list of sample records parsed from every JSON file in the samples dir."""
+    records: list[dict] = []
+    for path in list_sample_files(directory):
+        payload = load_sample(path)
+        records.append(
+            {
+                "id": payload.get("id"),
+                "language": payload.get("language"),
+                "skill": payload.get("skill"),
+                "expected_cefr": payload.get("expected_cefr"),
+                "file": path.name,
+            }
+        )
+    return records
+
+
+def filter_catalog(
+    records: list[dict] | None = None,
+    *,
+    language: str | None = None,
+    skill: str | None = None,
+) -> list[dict]:
+    """Return samples narrowed by optional language / skill filters."""
+    if records is None:
+        records = catalog_samples()
+    if language:
+        lang = language.strip().lower()
+        records = [r for r in records if str(r.get("language") or "").strip().lower() == lang]
+    if skill:
+        sk = skill.strip().lower()
+        records = [r for r in records if str(r.get("skill") or "").strip().lower() == sk]
+    return records
