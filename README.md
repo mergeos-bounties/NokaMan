@@ -130,6 +130,9 @@ For a browser demo that talks to the local FastAPI app, see [`web/README.md`](we
 | `nokaman rubrics list [-l en]` | Skill rubrics |
 | `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
 | `nokaman eval text …` | Evaluate free text |
+| `nokaman eval score --text "..." -l en` | Score text as a per-dimension rich table (Writing/Vocab/Grammar/Reading/Listening/Speaking + CEFR) |
+| `nokaman eval score --sample path/to/sample.json -l en` | Score a sample file with dimension breakdown |
+| `nokaman eval score --text "..." --json` | Same scoring as raw JSON output |
 | `nokaman eval batch --out data/out/batch.json` | Score every sample and write a JSON CEFR hit-rate report |
 | `nokaman train …` | Toy calibration with config/report exports |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
