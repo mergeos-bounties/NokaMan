@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -11,7 +10,7 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
+from nokaman.data.loader import list_rubric_files, list_sample_files, load_rubric, load_sample
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
@@ -130,7 +129,7 @@ def languages_coverage(json_output: bool = typer.Option(False, "--json")) -> Non
 
 
 @rubrics_app.command("list")
-def rubrics_list(lang: Optional[str] = typer.Option(None, "--lang", "-l")) -> None:
+def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
     files = list_rubric_files()
     if lang:
         files = [p for p in files if p.stem == lang.strip().lower()]
@@ -193,8 +192,8 @@ def rubrics_explain(
 @eval_app.command("text")
 def eval_text(
     lang: str = typer.Option("en", "--lang", "-l"),
-    text: Optional[str] = typer.Option(None, "--text", "-t"),
-    file: Optional[Path] = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
+    text: str | None = typer.Option(None, "--text", "-t"),
+    file: Path | None = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
     skill: str = typer.Option("writing", "--skill", "-s"),
 ) -> None:
     if file is not None:
@@ -210,6 +209,69 @@ def eval_text(
 @eval_app.command("demo")
 def eval_demo(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     _print_json(data=evaluate_demo(lang))
+
+
+@eval_app.command("score")
+def eval_score(
+    sample: Path | None = typer.Option(None, "--sample", "-s", exists=True, dir_okay=False,
+                                          help="Path to a sample JSON file."),
+    lang: str = typer.Option("en", "--lang", "-l", help="Language code."),
+    text: str | None = typer.Option(None, "--text", "-t", help="Input text."),
+    skill: str = typer.Option("writing", "--skill", "-k", help="Skill to score."),
+    json_output: bool = typer.Option(False, "--json", help="Print raw JSON instead of a table."),
+) -> None:
+    """Score a sample or text and show per-dimension metrics as a rich table."""
+    if sample is not None:
+        result = evaluate_sample_file(sample)
+        input_label = str(sample)
+    elif text:
+        result = evaluate_text(lang, text, skill=skill)
+        input_label = text
+    else:
+        console.print("[red]Provide --sample or --text[/red]")
+        raise typer.Exit(code=1)
+
+    overall = result.get("score")
+    cefr = result.get("cefr")
+    if json_output:
+        _print_json(data=result)
+        return
+
+    # Per-dimension metrics from the underlying ToyAbilityModel.
+    scored_text = (result.get("source") or "") or (
+        load_sample(Path(sample)).get("text", "") if sample is not None else text
+    )
+    dims = _compute_dimension_scores(scored_text or "", lang)
+
+    table = Table(title=f"Score dimensions  —  {input_label}  ({lang})")
+    table.add_column("Dimension", no_wrap=True)
+    table.add_column("Score", justify="right")
+    for name, val in dims:
+        table.add_row(name, f"{val:g}")
+    console.print(table)
+
+    console.print(f"[green]Overall[/green]: [bold]{overall}[/bold]  "
+                  f"[yellow]CEFR[/yellow]: [bold]{cefr}[/bold]  "
+                  f"[dim]skill={result.get('skill')}[/dim]")
+    if result.get("expected_cefr"):
+        chk = result.get("band_check")
+        console.print(f"[dim]expected CEFR[/dim]: {result['expected_cefr']}  "
+                      f"band_check={chk}")
+
+
+def _compute_dimension_scores(text: str, lang: str) -> list[tuple[str, float]]:
+    """Return named (dimension, 0..100) scores so the CLI can render a table."""
+    from nokaman.models.toy import ToyAbilityModel
+
+    model = ToyAbilityModel(language=(lang or "en"))
+    return [
+        ("Writing (overall)", model.score_text(text, skill="writing")["score"]),
+        ("Vocabulary", model.score_text(text, skill="vocabulary")["score"]),
+        ("Grammar", model.score_text(text, skill="grammar")["score"]),
+        ("Reading", model.score_text(text, skill="reading")["score"]),
+        ("Listening", model.score_text(text, skill="listening")["score"]),
+        ("Speaking", model.score_text(text, skill="speaking")["score"]),
+    ]
 
 
 @eval_app.command("samples")
@@ -238,7 +300,7 @@ def eval_samples() -> None:
 
 @eval_app.command("batch")
 def eval_batch(
-    out: Optional[Path] = typer.Option(None, "--out", "-o"),
+    out: Path | None = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()
