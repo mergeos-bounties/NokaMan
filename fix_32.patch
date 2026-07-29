@@ -1,0 +1,284 @@
+### Root-Cause & Design Analysis
+
+#### Context & Objectives
+In automated grading and rubric evaluation systems, teacher workflows rely heavily on exporting evaluation results into tabular formats (e.g., `.csv`) for spreadsheet inspection, gradebook synchronization, and batch analysis. The `batch evaluate` command requires a `--format csv` option alongside standard formats (e.g., `json`, `text`) to support structured CSV exporting.
+
+#### Key Engineering Considerations
+1. **Backward Compatibility**: Ensure `--format` defaults to existing formats (e.g., `json` or `text`) so existing CLI commands and programmatic invocations remain unaffected.
+2. **Boundary Conditions & Robustness**:
+   - **Empty Datasets**: Output CSV column headers without crashing when evaluation results are empty.
+   - **Nested & Dynamic Fields**: Criteria breakdowns or nested score dictionaries must be safely serialized (e.g., flattened or serialized to compact JSON strings) into CSV columns.
+   - **Special Characters**: Multi-line teacher feedback, embedded double quotes, and commas must be safely escaped using Python's standard `csv.DictWriter` / `csv.writer` dialect (`csv.QUOTE_MINIMAL` or `csv.QUOTE_ALL`).
+   - **Output Routing**: Support streaming CSV directly to `stdout` or writing to a specified `--output` file path.
+3. **Zero Side-Effects**: Pure functional CSV formatting without altering input evaluation objects or mutating execution state.
+
+---
+
+### Implementation
+
+Below is the implementation of the batch evaluation CSV formatting module, CLI command parser, and full test suite.
+
+```python filepath: src/noka_eval/exporter.py
+import csv
+import io
+import json
+from typing import Any, Dict, List, Optional
+
+
+def format_evaluations_as_csv(
+    evaluations: List[Dict[str, Any]],
+    fieldnames: Optional[List[str]] = None
+) -> str:
+    """
+    Formats a list of batch evaluation dictionaries into a CSV string.
+
+    Handles boundary conditions:
+    - Empty evaluation list
+    - Nested score breakdowns (flattened or JSON-serialized)
+    - Multi-line text and special characters escaping
+    """
+    if not evaluations:
+        if fieldnames:
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator="\n")
+            writer.writeheader()
+            return output.getvalue()
+        return ""
+
+    # Flatten nested dictionaries or criteria breakdowns for standard tabular view
+    processed_records: List[Dict[str, Any]] = []
+    dynamic_keys = set()
+
+    for item in evaluations:
+        record: Dict[str, Any] = {}
+        for k, v in item.items():
+            if isinstance(v, dict):
+                # Represent sub-dictionaries as serialized JSON strings or flattened keys
+                record[k] = json.dumps(v, ensure_ascii=False)
+            elif isinstance(v, (list, tuple)):
+                record[k] = json.dumps(v, ensure_ascii=False)
+            else:
+                record[k] = v if v is not None else ""
+            dynamic_keys.add(k)
+        processed_records.append(record)
+
+    # Determine final standard field ordering if not provided
+    if not fieldnames:
+        # Standard default field order prioritized for teacher workflows
+        preferred_order = ["id", "student_id", "submission_id", "score", "max_score", "status", "feedback", "timestamp"]
+        fieldnames = [k for k in preferred_order if k in dynamic_keys]
+        for k in sorted(dynamic_keys):
+            if k not in fieldnames:
+                fieldnames.append(k)
+
+    output = io.StringIO()
+    writer = csv.DictWriter(
+        output,
+        fieldnames=fieldnames,
+        extrasaction="ignore",
+        lineterminator="\n"
+    )
+    writer.writeheader()
+    writer.writerows(processed_records)
+
+    return output.getvalue()
+```
+
+```python filepath: src/noka_eval/cli.py
+import argparse
+import json
+import sys
+from typing import Any, Dict, List, Optional
+
+from noka_eval.exporter import format_evaluations_as_csv
+
+
+def run_batch_evaluation(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Core batch evaluation processing stub.
+    Evaluates submissions and attaches score metrics and teacher feedback fields.
+    """
+    results = []
+    for item in data:
+        score = item.get("score", 0.0)
+        max_score = item.get("max_score", 100.0)
+        results.append({
+            "id": item.get("id", ""),
+            "student_id": item.get("student_id", ""),
+            "score": score,
+            "max_score": max_score,
+            "status": "PASSED" if score >= (max_score * 0.6) else "NEEDS_REVIEW",
+            "feedback": item.get("feedback", ""),
+            "criteria": item.get("criteria", {})
+        })
+    return results
+
+
+def main(args: Optional[List[str]] = None) -> int:
+    parser = argparse.ArgumentParser(description="Batch Evaluation CLI Tool")
+    parser.add_argument(
+        "--input",
+        "-i",
+        type=str,
+        help="Path to input JSON evaluation batch file"
+    )
+    parser.add_argument(
+        "--format",
+        "-f",
+        choices=["json", "text", "csv"],
+        default="json",
+        help="Output format for batch evaluation (default: json)"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        help="Optional output file destination path"
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    raw_input = []
+    if parsed_args.input:
+        with open(parsed_args.input, "r", encoding="utf-8") as f:
+            raw_input = json.load(f)
+
+    results = run_batch_evaluation(raw_input)
+
+    if parsed_args.format == "csv":
+        formatted_output = format_evaluations_as_csv(results)
+    elif parsed_args.format == "text":
+        formatted_output = "\n".join(
+            f"ID: {r.get('id')} | Student: {r.get('student_id')} | Score: {r.get('score')}/{r.get('max_score')} | Status: {r.get('status')}"
+            for r in results
+        )
+    else:  # json
+        formatted_output = json.dumps(results, indent=2, ensure_ascii=False)
+
+    if parsed_args.output:
+        with open(parsed_args.output, "w", encoding="utf-8") as f:
+            f.write(formatted_output)
+    else:
+        sys.stdout.write(formatted_output + ("\n" if not formatted_output.endswith("\n") else ""))
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+```python filepath: tests/test_batch_evaluate_csv.py
+import json
+import os
+import tempfile
+import unittest
+from noka_eval.exporter import format_evaluations_as_csv
+from noka_eval.cli import main, run_batch_evaluation
+
+
+class TestBatchEvaluateCSV(unittest.TestCase):
+
+    def test_format_evaluations_as_csv_standard(self):
+        evaluations = [
+            {
+                "id": "eval_1",
+                "student_id": "std_101",
+                "score": 85.5,
+                "max_score": 100,
+                "status": "PASSED",
+                "feedback": "Great work on the essay!",
+            },
+            {
+                "id": "eval_2",
+                "student_id": "std_102",
+                "score": 52.0,
+                "max_score": 100,
+                "status": "NEEDS_REVIEW",
+                "feedback": "Needs improvement in coherence.",
+            }
+        ]
+        csv_out = format_evaluations_as_csv(evaluations)
+        lines = csv_out.strip().split("\n")
+        
+        self.assertEqual(len(lines), 3)  # Header + 2 rows
+        self.assertIn("id,student_id,score,max_score,status,feedback", lines[0])
+        self.assertIn("eval_1,std_101,85.5,100,PASSED,Great work on the essay!", lines[1])
+
+    def test_format_evaluations_as_csv_escaping_special_chars(self):
+        evaluations = [
+            {
+                "id": "eval_3",
+                "student_id": "std_103",
+                "score": 90.0,
+                "max_score": 100,
+                "status": "PASSED",
+                "feedback": "Excellent!\nIncludes multi-line feedback, \"quotes\", and commas.",
+            }
+        ]
+        csv_out = format_evaluations_as_csv(evaluations)
+        self.assertIn('"Excellent!\nIncludes multi-line feedback, ""quotes"", and commas."', csv_out)
+
+    def test_format_evaluations_as_csv_empty_input(self):
+        csv_out = format_evaluations_as_csv([])
+        self.assertEqual(csv_out, "")
+
+        csv_with_headers = format_evaluations_as_csv([], fieldnames=["id", "score"])
+        self.assertEqual(csv_with_headers.strip(), "id,score")
+
+    def test_cli_format_csv_file_output(self):
+        sample_input = [
+            {"id": "1", "student_id": "S1", "score": 95, "max_score": 100, "feedback": "Nice"},
+            {"id": "2", "student_id": "S2", "score": 40, "max_score": 100, "feedback": "Redo"}
+        ]
+
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as infile, \
+             tempfile.NamedTemporaryFile(mode="r", delete=False, suffix=".csv") as outfile:
+            json.dump(sample_input, infile)
+            infile_path = infile.name
+            outfile_path = outfile.name
+
+        try:
+            exit_code = main(["--input", infile_path, "--format", "csv", "--output", outfile_path])
+            self.assertEqual(exit_code, 0)
+
+            with open(outfile_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            self.assertIn("id,student_id,score,max_score,status,feedback", content)
+            self.assertIn("1,S1,95,100,PASSED,Nice", content)
+            self.assertIn("2,S2,40,100,NEEDS_REVIEW,Redo", content)
+        finally:
+            if os.path.exists(infile_path):
+                os.remove(infile_path)
+            if os.path.exists(outfile_path):
+                os.remove(outfile_path)
+
+    def test_cli_backward_compatibility_default_format(self):
+        sample_input = [{"id": "1", "student_id": "S1", "score": 80, "max_score": 100}]
+        
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as infile, \
+             tempfile.NamedTemporaryFile(mode="r", delete=False, suffix=".json") as outfile:
+            json.dump(sample_input, infile)
+            infile_path = infile.name
+            outfile_path = outfile.name
+
+        try:
+            exit_code = main(["--input", infile_path, "--output", outfile_path])
+            self.assertEqual(exit_code, 0)
+
+            with open(outfile_path, "r", encoding="utf-8") as f:
+                res = json.load(f)
+
+            self.assertIsInstance(res, list)
+            self.assertEqual(res[0]["id"], "1")
+        finally:
+            if os.path.exists(infile_path):
+                os.remove(infile_path)
+            if os.path.exists(outfile_path):
+                os.remove(outfile_path)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
