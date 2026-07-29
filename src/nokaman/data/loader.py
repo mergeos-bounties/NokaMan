@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from nokaman.config import LISTENING_DIR, RUBRICS_DIR, SAMPLES_DIR
+from nokaman.data.schemas import validate_rubric_payload, validate_sample_payload
 
 
 def list_sample_files(directory: Path | None = None) -> list[Path]:
@@ -37,7 +38,7 @@ def load_sample(path: Path) -> dict:
     payload.setdefault("language", "en")
     payload.setdefault("skill", "writing")
     payload.setdefault("text", "")
-    return payload
+    return validate_sample_payload(payload, str(path))
 
 
 def load_listening_pack(path: Path) -> dict:
@@ -54,4 +55,4 @@ def load_rubric(path: Path) -> dict:
     payload = load_json(path)
     payload.setdefault("language", path.stem)
     payload.setdefault("skills", {})
-    return payload
+    return validate_rubric_payload(payload, str(path))
