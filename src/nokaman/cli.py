@@ -11,9 +11,11 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
+from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric, load_sample
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
+from nokaman.models.cefr import score_to_cefr
+from nokaman.models.toy import ToyAbilityModel
 from nokaman.eval.session import SessionManager
 from nokaman.rubrics.registry import (
     SKILLS,
@@ -84,6 +86,89 @@ def demo_cmd(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     path = OUT_DIR / f"demo_{lang}.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     console.print(f"[dim]saved[/dim] {path}")
+
+
+@app.command("score")
+def score_cmd(
+    sample: Path = typer.Option(
+        ..., "--sample", "-s", exists=True, dir_okay=False, help="Path to sample JSON file"
+    ),
+    lang: Optional[str] = typer.Option(None, "--lang", "-l", help="Override language"),
+    json_output: bool = typer.Option(False, "--json", help="Output JSON instead of table"),
+) -> None:
+    """Score a sample file with multi-skill dimension table (rich or plain fallback)."""
+    sample_data = load_sample(sample)
+    language = lang or str(sample_data.get("language") or "en")
+    text = str(sample_data.get("text") or "")
+    skill = str(sample_data.get("skill") or "writing")
+    expected_cefr = sample_data.get("expected_cefr")
+
+    model = ToyAbilityModel(language=language)
+    multi = model.score_multi_skill(text)
+    writing_result = model.score_text(text, skill="writing")
+    framework_bands = writing_result.get("framework_bands") or {}
+
+    if json_output:
+        _print_json(
+            data={
+                "sample_id": sample_data.get("id"),
+                "source": str(sample),
+                "language": multi["language"],
+                "overall": multi["overall"],
+                "cefr": multi["cefr"],
+                "skills": multi["skills"],
+                "framework_bands": framework_bands,
+                "features": writing_result.get("features"),
+                "expected_cefr": expected_cefr,
+            }
+        )
+        return
+
+    # Rich table
+    table = Table(
+        title=f"[bold]Score: {sample.name}[/bold]",
+        caption=f"Language: {language} | Skill: {skill}",
+    )
+    table.add_column("Dimension", style="cyan", no_wrap=True)
+    table.add_column("Score", justify="right", style="green")
+    table.add_column("CEFR", justify="center", style="yellow")
+
+    for sk in SKILLS:
+        score_val = multi["skills"].get(sk)
+        if score_val is not None:
+            cefr_val = score_to_cefr(score_val)
+            table.add_row(sk.capitalize(), f"{score_val:.2f}", cefr_val)
+
+    table.add_section()
+    table.add_row("[bold]Overall[/bold]", f"[bold]{multi['overall']:.2f}[/bold]", f"[bold]{multi['cefr']}[/bold]")
+
+    if expected_cefr:
+        table.add_row(
+            "[dim]Expected[/dim]",
+            "[dim]—[/dim]",
+            f"[dim]{expected_cefr}[/dim]",
+        )
+
+    console.print(table)
+
+    # Framework bands
+    if framework_bands:
+        fw_table = Table(title="Framework bands")
+        fw_table.add_column("Framework", style="cyan")
+        fw_table.add_column("Band", style="green")
+        for fw, band in sorted(framework_bands.items()):
+            fw_table.add_row(fw.upper(), str(band))
+        console.print(fw_table)
+
+    # Features breakout
+    features = writing_result.get("features") or {}
+    if features:
+        ft_table = Table(title="Features")
+        ft_table.add_column("Feature", style="cyan")
+        ft_table.add_column("Value", style="green")
+        for feat, val in sorted(features.items()):
+            ft_table.add_row(feat.replace("_", " ").capitalize(), str(val))
+        console.print(ft_table)
 
 
 @lang_app.command("list")

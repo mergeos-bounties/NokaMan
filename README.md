@@ -130,6 +130,7 @@ For a browser demo that talks to the local FastAPI app, see [`web/README.md`](we
 | `nokaman rubrics list [-l en]` | Skill rubrics |
 | `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
 | `nokaman eval text …` | Evaluate free text |
+| `nokaman score --sample path` | Score a sample with rich dimension table (also `--json`) |
 | `nokaman eval batch --out data/out/batch.json` | Score every sample and write a JSON CEFR hit-rate report |
 | `nokaman train …` | Toy calibration with config/report exports |
 | `nokaman gui` / `nokaman-gui` | **Qt desktop app** (needs `.[gui]`) |
@@ -138,6 +139,7 @@ For a browser demo that talks to the local FastAPI app, see [`web/README.md`](we
 ```powershell
 nokaman demo -l vi
 nokaman demo -l ko
+nokaman score --sample data/samples/en_writing_b2.json
 nokaman eval batch --out data/out/batch.json
 nokaman train toy --config configs/example.yaml
 nokaman-gui
