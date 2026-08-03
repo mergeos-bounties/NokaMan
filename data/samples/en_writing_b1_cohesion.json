@@ -1,0 +1,12 @@
+{
+  "id": "en_writing_b1_cohesion",
+  "language": "en",
+  "skill": "writing",
+  "expected_cefr": "B1",
+  "text": "First I planned a short trip with my classmates. Then we compared cheap tickets and chose a weekend train. However, the weather changed, so we also prepared indoor activities. Therefore the day still felt useful because we practiced English together.",
+  "cohesion_observations": {
+    "paragraph_count": 1,
+    "connector_count": 5
+  },
+  "notes": "Synthetic offline fixture for cohesion/coherence stubs; no learner PII."
+}

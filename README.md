@@ -24,6 +24,7 @@
 - [Supported language catalog](docs/LANGUAGES.md)
 - [Language sample guide](docs/SAMPLES.md)
 - [Offline speaking fluency rubric](docs/SPEAKING_FLUENCY.md)
+- [Offline writing cohesion rubric](docs/WRITING_COHESION.md)
 - [Diagrams](#diagrams)
 - [Repository layout](#repository-layout)
 - [Development](#development)
@@ -197,6 +198,7 @@ Rubrics and samples live under `data/`. Extend by adding rubric JSON + samples, 
 See [docs/LANGUAGES.md](docs/LANGUAGES.md) for the supported language catalog, CEFR/JLPT/TOPIK/HSK mappings, and language-pack extension steps.
 See [docs/SAMPLES.md](docs/SAMPLES.md) for the sample JSON schema, `expected_cefr` semantics, naming rules, and offline verification commands.
 See [docs/SPEAKING_FLUENCY.md](docs/SPEAKING_FLUENCY.md) for the transcript-only speaking rubric and its limitations.
+See [docs/WRITING_COHESION.md](docs/WRITING_COHESION.md) for offline writing cohesion/coherence stub dimensions and limitations.
 
 | Code | Typical use |
 | --- | --- |

@@ -6,6 +6,7 @@
 
 ## ✅ 已完成
 
+- Added offline writing cohesion/coherence stub rubric, sample, and docs for bounty #66.
 - Added `CONTRIBUTING.md` for bounty #18 with setup, tests, good-first-issue path, and MergeOS claim flow.
 - Added README links to the contribution guide.
 - Harness initialized for NokaMan bounty #11.
