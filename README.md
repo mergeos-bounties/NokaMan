@@ -129,6 +129,7 @@ For a browser demo that talks to the local FastAPI app, see [`web/README.md`](we
 | `nokaman languages coverage` | Language x skill sample coverage matrix |
 | `nokaman rubrics list [-l en]` | Skill rubrics |
 | `nokaman rubrics explain -l en` | Print rubric skill weights, notes, frameworks, and bands |
+| `nokaman samples list [--language en] [--skill writing]` | List catalogued samples (table) |
 | `nokaman eval text …` | Evaluate free text |
 | `nokaman eval batch --out data/out/batch.json` | Score every sample and write a JSON CEFR hit-rate report |
 | `nokaman train …` | Toy calibration with config/report exports |
@@ -138,6 +139,7 @@ For a browser demo that talks to the local FastAPI app, see [`web/README.md`](we
 ```powershell
 nokaman demo -l vi
 nokaman demo -l ko
+nokaman samples list --language en --skill writing
 nokaman eval batch --out data/out/batch.json
 nokaman train toy --config configs/example.yaml
 nokaman-gui
