@@ -29,6 +29,30 @@ loader:
 Use `score_speaking_fluency()` for a transcript or `score_speaking_sample()`
 for a sample dictionary. Both paths run locally and make no network requests.
 
+## ASR transcript JSON (app integration)
+
+Learning apps can POST/save ASR output and score it offline:
+
+```bash
+nokaman eval speaking --file data/fixtures/asr_transcript_en_b1.json
+```
+
+Accepted fields:
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `skill` | recommended | Must be `speaking` when present |
+| `transcript` or `text` | yes | ASR text |
+| `confidence` | no | `0–1` or `0–100` |
+| `duration_seconds` | no | Improves pace |
+| `pause_count` / `filler_count` | no | Prefer observed counts over punctuation proxies |
+| `language` | no | Echoed in the report (default `en`) |
+
+Response includes `score`, `dimensions`, **`feedback` bullets**, `observations.confidence`,
+and `limitations` for safe UI copy.
+
+Python helper: `score_asr_transcript(payload)`.
+
 ## Limitations
 
 - A transcript cannot measure pronunciation, stress, intonation, hesitation
