@@ -1,0 +1,1 @@
+from pydantic import BaseModel, Field\n\nclass RubricModel(BaseModel):\n    language: str\n    skills: dict[str, dict[str, float | str]]\n    bands: list[str]\n\ndef validate_rubric(data: dict) -> RubricModel:\n    return RubricModel(**data)
