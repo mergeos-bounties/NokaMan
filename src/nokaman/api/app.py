@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from nokaman import __version__
 from nokaman.eval.adaptive import adaptive_session
-from nokaman.eval.metrics import placement_test
+from nokaman.eval.metrics import placement_test, run_placement_pack
 from nokaman.eval.pipeline import evaluate_demo, evaluate_text
 from nokaman.rubrics.registry import SUPPORTED_LANGUAGES, get_language_meta
 
@@ -37,6 +37,12 @@ class TextReq(BaseModel):
 class PlacementReq(BaseModel):
     language: str = "en"
     answers: list[str] = Field(..., min_length=1)
+
+
+class PlacementPackReq(BaseModel):
+    language: str = "en"
+    answers: list[str] | None = None
+    use_demo_answers: bool = False
 
 
 class AdaptiveReq(BaseModel):
@@ -84,6 +90,20 @@ def assess_placement(req: PlacementReq) -> dict:
     if req.language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, f"unsupported language {req.language}")
     return placement_test(req.language, req.answers)
+
+
+@app.post("/assess/placement-pack")
+def assess_placement_pack(req: PlacementPackReq) -> dict:
+    if req.language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, f"unsupported language {req.language}")
+    try:
+        return run_placement_pack(
+            req.language,
+            answers=req.answers,
+            use_demo_answers=req.use_demo_answers,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(400, str(exc)) from exc
 
 
 @app.post("/assess/adaptive")

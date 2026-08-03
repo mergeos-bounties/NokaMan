@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from nokaman.config import PLACEMENT_DIR
 from nokaman.data.loader import list_sample_files, load_sample
 from nokaman.eval.pipeline import evaluate_sample_file
 from nokaman.models.cefr import cefr_rank
@@ -63,6 +65,33 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
     }
 
 
+def load_placement_pack(language: str, directory: Path | None = None) -> dict:
+    """Load a license-safe placement pack JSON for a language (en/ko/ja minimum)."""
+    code = language.strip().lower()
+    root = directory or PLACEMENT_DIR
+    path = root / f"{code}.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"No placement pack for language '{code}'. Expected file: {path}"
+        )
+    pack = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(pack, dict):
+        raise ValueError(f"Placement pack must be a JSON object: {path}")
+    prompts = pack.get("prompts") or []
+    if not isinstance(prompts, list) or len(prompts) < 3:
+        raise ValueError(f"Placement pack needs at least 3 prompts: {path}")
+    pack["language"] = str(pack.get("language") or code).strip().lower()
+    pack["source"] = str(path)
+    return pack
+
+
+def list_placement_packs(directory: Path | None = None) -> list[str]:
+    root = directory or PLACEMENT_DIR
+    if not root.exists():
+        return []
+    return sorted(p.stem for p in root.glob("*.json"))
+
+
 def placement_test(language: str, answers: list[str]) -> dict:
     """
     Simple placement: score each short answer text, average overall CEFR.
@@ -87,4 +116,59 @@ def placement_test(language: str, answers: list[str]) -> dict:
         "cefr": score_to_cefr(overall),
         "items": details,
         "ready_for_ui": True,
+    }
+
+
+def run_placement_pack(
+    language: str,
+    answers: list[str] | None = None,
+    *,
+    use_demo_answers: bool = False,
+    directory: Path | None = None,
+) -> dict:
+    """
+    Single product path: load prompts for a language, score answers, return app-ready report.
+
+    If answers is None and use_demo_answers is True, score bundled demo answers
+    (sample evidence reports for EN/KO/JA).
+    """
+    pack = load_placement_pack(language, directory=directory)
+    prompts = pack["prompts"]
+    if answers is None:
+        if not use_demo_answers:
+            raise ValueError("Provide answers or set use_demo_answers=True for sample reports")
+        answers = [str(p.get("demo_answer") or "") for p in prompts]
+    if len(answers) != len(prompts):
+        raise ValueError(
+            f"Expected {len(prompts)} answers for pack {pack.get('id')}, got {len(answers)}"
+        )
+    if any(not str(a).strip() for a in answers):
+        raise ValueError("All placement answers must be non-empty")
+
+    scored = placement_test(pack["language"], answers)
+    items = []
+    for prompt, detail, answer in zip(prompts, scored["items"], answers, strict=True):
+        items.append(
+            {
+                "prompt_id": prompt.get("id"),
+                "skill": prompt.get("skill"),
+                "prompt": prompt.get("prompt"),
+                "answer": answer,
+                "score": detail.get("overall"),
+                "cefr": detail.get("cefr"),
+                "skills": detail.get("skills"),
+            }
+        )
+    return {
+        "pack_id": pack.get("id"),
+        "title": pack.get("title"),
+        "license": pack.get("license"),
+        "language": pack["language"],
+        "n_items": len(items),
+        "overall": scored["overall"],
+        "cefr": scored["cefr"],
+        "items": items,
+        "ready_for_ui": True,
+        "sample_report": bool(use_demo_answers),
+        "source": pack.get("source"),
     }

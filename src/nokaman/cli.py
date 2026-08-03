@@ -12,7 +12,7 @@ from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
-from nokaman.eval.metrics import batch_evaluate, placement_test
+from nokaman.eval.metrics import batch_evaluate, list_placement_packs, placement_test, run_placement_pack
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
 from nokaman.rubrics.registry import (
@@ -294,6 +294,41 @@ def eval_placement(
 ) -> None:
     result = placement_test(lang, answer)
     _print_json(data=result)
+
+
+@eval_app.command("placement-pack")
+def eval_placement_pack(
+    lang: str = typer.Option("en", "--lang", "-l", help="Pack language: en, ko, or ja"),
+    answer: Optional[list[str]] = typer.Option(
+        None,
+        "--answer",
+        "-a",
+        help="Learner answers in pack order (omit with --demo for sample report)",
+    ),
+    demo: bool = typer.Option(
+        False,
+        "--demo",
+        help="Score bundled demo answers (sample evidence report)",
+    ),
+) -> None:
+    """Run the multi-lang placement pack (prompts + scoring + app-ready JSON)."""
+    try:
+        if demo:
+            result = run_placement_pack(lang, use_demo_answers=True)
+        elif answer:
+            result = run_placement_pack(lang, answers=list(answer))
+        else:
+            console.print("[red]Provide --answer … or --demo[/red]")
+            raise typer.Exit(code=1)
+    except (FileNotFoundError, ValueError) as exc:
+        console.print(f"[red]{exc}[/red]")
+        console.print(f"[dim]Available packs:[/dim] {', '.join(list_placement_packs()) or '(none)'}")
+        raise typer.Exit(code=1) from exc
+    _print_json(data=result)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUT_DIR / f"placement_pack_{result['language']}.json"
+    out_path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    console.print(f"[dim]saved[/dim] {out_path}")
 
 
 @train_app.command("toy")
