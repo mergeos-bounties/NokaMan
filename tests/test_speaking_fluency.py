@@ -4,8 +4,11 @@ import json
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from nokaman.cli import app
 from nokaman.rubrics.speaking_fluency import (
+    score_asr_transcript,
     score_speaking_fluency,
     score_speaking_sample,
 )
@@ -28,6 +31,7 @@ def test_speaking_fluency_reports_offline_dimensions() -> None:
     assert result["observations"]["word_count"] == 12
     assert result["observations"]["filler_count"] == 1
     assert result["observations"]["words_per_minute"] == 80.0
+    assert isinstance(result["feedback"], list) and len(result["feedback"]) >= 3
     assert any("not a certified CEFR" in item for item in result["limitations"])
 
 
@@ -50,14 +54,46 @@ def test_speaking_fluency_marks_estimated_observations() -> None:
     assert any("estimated" in item for item in result["limitations"])
 
 
+def test_asr_transcript_accepts_confidence_and_feedback() -> None:
+    path = Path("data/fixtures/asr_transcript_en_b1.json")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    result = score_asr_transcript(payload)
+
+    assert result["skill"] == "speaking"
+    assert result["observations"]["confidence"] == 0.91
+    assert any("confidence" in bullet.lower() for bullet in result["feedback"])
+
+
+def test_asr_confidence_percent_scale() -> None:
+    result = score_asr_transcript(
+        {
+            "skill": "speaking",
+            "transcript": "I practiced speaking for five minutes today.",
+            "confidence": 88,
+        }
+    )
+    assert result["observations"]["confidence"] == 0.88
+
+
 @pytest.mark.parametrize(
     ("kwargs", "message"),
     [
         ({"duration_seconds": 0}, "duration_seconds"),
         ({"pause_count": -1}, "pause_count"),
         ({"filler_count": -1}, "filler_count"),
+        ({"confidence": -0.1}, "confidence"),
     ],
 )
 def test_speaking_fluency_rejects_invalid_observations(kwargs: dict, message: str) -> None:
     with pytest.raises(ValueError, match=message):
         score_speaking_fluency("A valid transcript.", **kwargs)
+
+
+def test_cli_eval_speaking_fixture() -> None:
+    result = CliRunner().invoke(
+        app,
+        ["eval", "speaking", "--file", "data/fixtures/asr_transcript_en_b1.json"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "feedback" in result.output
+    assert "speaking" in result.output

@@ -14,6 +14,7 @@ from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
+from nokaman.rubrics.speaking_fluency import score_asr_transcript
 from nokaman.eval.session import SessionManager
 from nokaman.rubrics.registry import (
     SKILLS,
@@ -285,6 +286,34 @@ def eval_summary() -> None:
             "adjacent_cefr_hit_rate": report.get("adjacent_cefr_hit_rate"),
         }
     )
+
+
+@eval_app.command("speaking")
+def eval_speaking(
+    file: Path = typer.Option(
+        ...,
+        "--file",
+        "-f",
+        exists=True,
+        dir_okay=False,
+        help="ASR transcript JSON (skill=speaking, transcript/text, optional confidence).",
+    ),
+) -> None:
+    """Score speaking from an ASR transcript JSON (offline fluency + feedback bullets)."""
+    payload = json.loads(file.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        console.print("[red]ASR file must be a JSON object[/red]")
+        raise typer.Exit(code=1)
+    try:
+        result = score_asr_transcript(payload)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1) from exc
+    _print_json(data=result)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUT_DIR / f"speaking_{result.get('language', 'en')}.json"
+    out_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    console.print(f"[dim]saved[/dim] {out_path}")
 
 
 @eval_app.command("placement")

@@ -1,0 +1,11 @@
+{
+  "id": "asr_transcript_en_b1",
+  "language": "en",
+  "skill": "speaking",
+  "transcript": "Hi, I am preparing a short talk about my weekend. I visited a museum with a friend, um, and then we talked about the paintings we liked the most.",
+  "confidence": 0.91,
+  "duration_seconds": 14.0,
+  "pause_count": 2,
+  "filler_count": 1,
+  "notes": "Synthetic ASR fixture for app integration; no real learner audio."
+}
