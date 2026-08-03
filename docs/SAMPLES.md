@@ -52,6 +52,20 @@ Choose the band from a reviewed learning objective or fixture design. Do not
 change the label merely to match the current toy model output. These labels and
 scores are approximate product signals, not certified language assessments.
 
+## List catalogued samples
+
+Browse the offline inventory without scoring:
+
+```powershell
+nokaman samples list
+nokaman samples list --language en --skill writing
+nokaman samples list --language ko --json
+```
+
+Filters are case-insensitive. The default output is a Rich table with id, file,
+language, skill, expected CEFR, and text length. Use `--json` for machine-readable
+rows.
+
 ## Add and verify a sample
 
 1. Confirm the language is listed by `nokaman languages list`.
@@ -61,6 +75,7 @@ scores are approximate product signals, not certified language assessments.
 4. Run the sample and batch evaluation paths:
 
 ```powershell
+nokaman samples list --language en --skill writing
 nokaman eval text --file data/samples/en_writing_b1_email.json
 nokaman eval batch --out data/out/batch.json
 pytest -q

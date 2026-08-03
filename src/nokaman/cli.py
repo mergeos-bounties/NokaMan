@@ -11,7 +11,12 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
+from nokaman.data.loader import (
+    filter_sample_catalog,
+    list_rubric_files,
+    list_sample_files,
+    load_rubric,
+)
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
@@ -29,10 +34,12 @@ app = typer.Typer(
 )
 lang_app = typer.Typer(help="Supported languages")
 rubrics_app = typer.Typer(help="Skill rubrics")
+samples_app = typer.Typer(help="Catalogued evaluation samples")
 eval_app = typer.Typer(help="Evaluate learner ability")
 train_app = typer.Typer(help="Training / calibration")
 app.add_typer(lang_app, name="languages")
 app.add_typer(rubrics_app, name="rubrics")
+app.add_typer(samples_app, name="samples")
 app.add_typer(eval_app, name="eval")
 session_app = typer.Typer(help="Adaptive quiz session (state machine)")
 app.add_typer(session_app, name="session")
@@ -125,6 +132,49 @@ def languages_coverage(json_output: bool = typer.Option(False, "--json")) -> Non
             "yes" if row["has_rubric"] else "fallback",
             str(row["total"]),
             *[str(row["skills"].get(skill, 0)) for skill in report["skills"]],
+        )
+    console.print(table)
+
+
+@samples_app.command("list")
+def samples_list(
+    language: str | None = typer.Option(
+        None,
+        "--language",
+        "-l",
+        help="Filter by language code (e.g. en, ko).",
+    ),
+    skill: str | None = typer.Option(
+        None,
+        "--skill",
+        "-s",
+        help="Filter by skill (e.g. writing, speaking).",
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Emit JSON instead of a table."),
+) -> None:
+    """List catalogued samples with optional language and skill filters."""
+    records = filter_sample_catalog(language=language, skill=skill)
+    if json_output:
+        _print_json(data=records)
+        return
+    if not records:
+        console.print("[yellow]No samples match the given filters[/yellow]")
+        raise typer.Exit()
+    table = Table(title=f"Samples ({len(records)})")
+    table.add_column("ID")
+    table.add_column("File")
+    table.add_column("Lang")
+    table.add_column("Skill")
+    table.add_column("CEFR")
+    table.add_column("Len", justify="right")
+    for row in records:
+        table.add_row(
+            str(row.get("id") or ""),
+            str(row.get("file") or ""),
+            str(row.get("language") or ""),
+            str(row.get("skill") or ""),
+            str(row.get("expected_cefr") or ""),
+            str(row.get("text_length") or 0),
         )
     console.print(table)
 
