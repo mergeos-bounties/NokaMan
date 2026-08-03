@@ -1,0 +1,32 @@
+{
+  "id": "placement_en_v1",
+  "language": "en",
+  "title": "English app placement pack",
+  "license": "MIT — synthetic prompts; no third-party copyrighted content",
+  "prompts": [
+    {
+      "id": "en_p1",
+      "skill": "writing",
+      "prompt": "Write 2–3 sentences about your daily routine.",
+      "demo_answer": "I usually wake up early and drink coffee. Then I work on my laptop and take a short walk after lunch."
+    },
+    {
+      "id": "en_p2",
+      "skill": "speaking",
+      "prompt": "Imagine you are introducing yourself to a new classmate. What do you say?",
+      "demo_answer": "Hi, my name is Alex. I am learning English because I want to travel and meet people from other countries."
+    },
+    {
+      "id": "en_p3",
+      "skill": "reading",
+      "prompt": "A notice says the library closes at 6pm on Fridays. In one sentence, explain what that means for a student who arrives at 6:10pm.",
+      "demo_answer": "The student cannot enter because the library is already closed at that time."
+    },
+    {
+      "id": "en_p4",
+      "skill": "grammar",
+      "prompt": "Complete: Yesterday I ___ to the market and ___ some fruit.",
+      "demo_answer": "Yesterday I went to the market and bought some fruit."
+    }
+  ]
+}

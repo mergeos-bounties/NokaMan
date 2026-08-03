@@ -1,0 +1,32 @@
+{
+  "id": "placement_ko_v1",
+  "language": "ko",
+  "title": "Korean app placement pack",
+  "license": "MIT — synthetic prompts; no third-party copyrighted content",
+  "prompts": [
+    {
+      "id": "ko_p1",
+      "skill": "writing",
+      "prompt": "하루에 하는 일을 두세 문장으로 적어 보세요.",
+      "demo_answer": "저는 아침에 일어나서 커피를 마십니다. 그다음에 공부하고 저녁에는 산책을 합니다."
+    },
+    {
+      "id": "ko_p2",
+      "skill": "speaking",
+      "prompt": "새 친구에게 자기소개를 한다면 뭐라고 말하겠어요?",
+      "demo_answer": "안녕하세요. 저는 민수입니다. 한국어를 배우고 있고 여행하는 것을 좋아합니다."
+    },
+    {
+      "id": "ko_p3",
+      "skill": "reading",
+      "prompt": "안내문에 도서관이 금요일 오후 6시에 닫힌다고 합니다. 6시 10분에 온 학생에게 무슨 뜻인지 한 문장으로 설명하세요.",
+      "demo_answer": "이미 문이 닫혀서 그 학생은 들어갈 수 없습니다."
+    },
+    {
+      "id": "ko_p4",
+      "skill": "grammar",
+      "prompt": "알맞은 말로 완성하세요: 어제 시장에 ___ 과일을 ___.",
+      "demo_answer": "어제 시장에 가서 과일을 샀습니다."
+    }
+  ]
+}

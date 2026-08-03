@@ -1,0 +1,78 @@
+{
+  "pack_id": "placement_en_v1",
+  "title": "English app placement pack",
+  "license": "MIT — synthetic prompts; no third-party copyrighted content",
+  "language": "en",
+  "n_items": 4,
+  "overall": 55.0,
+  "cefr": "B1",
+  "items": [
+    {
+      "prompt_id": "en_p1",
+      "skill": "writing",
+      "prompt": "Write 2–3 sentences about your daily routine.",
+      "answer": "I usually wake up early and drink coffee. Then I work on my laptop and take a short walk after lunch.",
+      "score": 55.39,
+      "cefr": "B1",
+      "skills": {
+        "vocabulary": 71.32,
+        "grammar": 29.26,
+        "reading": 52.87,
+        "writing": 55.65,
+        "listening": 50.09,
+        "speaking": 73.07
+      }
+    },
+    {
+      "prompt_id": "en_p2",
+      "skill": "speaking",
+      "prompt": "Imagine you are introducing yourself to a new classmate. What do you say?",
+      "answer": "Hi, my name is Alex. I am learning English because I want to travel and meet people from other countries.",
+      "score": 57.03,
+      "cefr": "B1",
+      "skills": {
+        "vocabulary": 73.92,
+        "grammar": 30.96,
+        "reading": 53.84,
+        "writing": 56.68,
+        "listening": 51.01,
+        "speaking": 75.84
+      }
+    },
+    {
+      "prompt_id": "en_p3",
+      "skill": "reading",
+      "prompt": "A notice says the library closes at 6pm on Fridays. In one sentence, explain what that means for a student who arrives at 6:10pm.",
+      "answer": "The student cannot enter because the library is already closed at that time.",
+      "score": 53.88,
+      "cefr": "B1",
+      "skills": {
+        "vocabulary": 70.43,
+        "grammar": 30.99,
+        "reading": 49.9,
+        "writing": 52.53,
+        "listening": 47.28,
+        "speaking": 72.42
+      }
+    },
+    {
+      "prompt_id": "en_p4",
+      "skill": "grammar",
+      "prompt": "Complete: Yesterday I ___ to the market and ___ some fruit.",
+      "answer": "Yesterday I went to the market and bought some fruit.",
+      "score": 53.69,
+      "cefr": "B1",
+      "skills": {
+        "vocabulary": 73.07,
+        "grammar": 28.59,
+        "reading": 48.49,
+        "writing": 51.04,
+        "listening": 45.94,
+        "speaking": 75.52
+      }
+    }
+  ],
+  "ready_for_ui": true,
+  "sample_report": true,
+  "source": "/Users/sawko/Documents/Projekty/SideJob/bounties/NokaMan/data/placement/en.json"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "placement_ja_v1",
+  "language": "ja",
+  "title": "Japanese app placement pack",
+  "license": "MIT — synthetic prompts; no third-party copyrighted content",
+  "prompts": [
+    {
+      "id": "ja_p1",
+      "skill": "writing",
+      "prompt": "毎日の生活について、2〜3文で書いてください。",
+      "demo_answer": "朝早く起きてコーヒーを飲みます。そのあと勉強をして、夕方は少し散歩します。"
+    },
+    {
+      "id": "ja_p2",
+      "skill": "speaking",
+      "prompt": "新しいクラスメイトに自己紹介するとしたら、何と言いますか。",
+      "demo_answer": "こんにちは。私はユキです。日本語を勉強していて、旅行が好きです。"
+    },
+    {
+      "id": "ja_p3",
+      "skill": "reading",
+      "prompt": "掲示に図書館は金曜日の午後6時に閉まるとあります。6時10分に来た学生にとって何を意味するか、一文で説明してください。",
+      "demo_answer": "すでに閉まっているので、その学生は入れません。"
+    },
+    {
+      "id": "ja_p4",
+      "skill": "grammar",
+      "prompt": "適切な語で完成させてください：昨日市場へ___、果物を___。",
+      "demo_answer": "昨日市場へ行って、果物を買いました。"
+    }
+  ]
+}
