@@ -101,3 +101,10 @@ Maintainers review the PR and credit MRG after merge according to the bounty pol
 - Do not force-push shared branches.
 - Do not add new dependencies unless the issue explicitly requires them.
 - Do not change CI, packaging, or release configuration for a documentation-only issue.
+
+
+---
+
+## Auto-generated section
+
+This project participates in MergeOS bounties.
