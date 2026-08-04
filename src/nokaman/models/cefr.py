@@ -27,6 +27,19 @@ def cefr_rank(band: str) -> int:
         return 0
 
 
+def cefr_midpoint_score(band: str) -> float:
+    """Return midpoint raw-score for a CEFR band (used for MAE)."""
+    midpoints = {
+        "A1": 17.0,
+        "A2": 42.0,
+        "B1": 57.0,
+        "B2": 72.0,
+        "C1": 84.5,
+        "C2": 95.0,
+    }
+    return midpoints.get(band.upper(), 0.0)
+
+
 def compare_bands(predicted: str, expected: str) -> dict:
     p, e = predicted.upper(), expected.upper()
     return {

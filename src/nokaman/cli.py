@@ -12,7 +12,7 @@ from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
 from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
-from nokaman.eval.metrics import batch_evaluate, placement_test
+from nokaman.eval.metrics import batch_evaluate, eval_report, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
 from nokaman.rubrics.registry import (
@@ -346,6 +346,24 @@ def train_report(run_id: str | None = typer.Option(None, "--run-id")) -> None:
 
 
 # ── session commands ─────────────────────────────────────────
+
+
+@eval_app.command("report")
+def eval_report_cmd(
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
+) -> None:
+    """Full report: band accuracy, adjacent-band accuracy, MAE on score."""
+    report = eval_report()
+    out_path = out or (RUNS_DIR / "eval_report.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    console.print(
+        f"[green]report[/green] n={report['n_samples']} "
+        f"exact={report['exact_cefr_hit_rate']} "
+        f"adjacent={report['adjacent_cefr_hit_rate']} "
+        f"mae={report['mae_score']}"
+    )
+    console.print(f"Report: {out_path}")
 
 
 @session_app.command("start")

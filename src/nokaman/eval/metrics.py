@@ -88,3 +88,32 @@ def placement_test(language: str, answers: list[str]) -> dict:
         "items": details,
         "ready_for_ui": True,
     }
+
+
+def eval_report(sample_dir: Path | None = None) -> dict:
+    """Full eval report: band accuracy, adjacent-band accuracy, MAE on score."""
+    from nokaman.models.cefr import cefr_midpoint_score
+
+    batch = batch_evaluate(sample_dir)
+    rows = batch["rows"]
+
+    mae_total = 0.0
+    mae_count = 0
+    for row in rows:
+        expected_cefr = row.get("expected_cefr")
+        score = row.get("score")
+        if expected_cefr is not None and score is not None:
+            expected_mid = cefr_midpoint_score(str(expected_cefr))
+            mae_total += abs(float(score) - expected_mid)
+            mae_count += 1
+
+    mae = round(mae_total / mae_count, 2) if mae_count else None
+
+    return {
+        "n_samples": batch["n_samples"],
+        "n_labeled": batch["n_labeled"],
+        "exact_cefr_hit_rate": batch["exact_cefr_hit_rate"],
+        "adjacent_cefr_hit_rate": batch["adjacent_cefr_hit_rate"],
+        "mae_score": mae,
+        "by_language": batch["by_language"],
+    }
