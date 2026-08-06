@@ -1,0 +1,63 @@
+# NokaMan Language Learning Fixtures
+# Multilingual text samples with CEFR proficiency labels
+# License: CC0-1.0 (public domain)
+
+english:
+  - text: "Hello, my name is John."
+    cefr: A1
+  - text: "I like to eat apples and drink water."
+    cefr: A1
+  - text: "The cat sat on the mat in the sun."
+    cefr: A1
+  - text: "She walks to school every morning at eight."
+    cefr: A2
+  - text: "I have been learning English for three years now."
+    cefr: A2
+  - text: "Would you like to go to the cinema this evening?"
+    cefr: B1
+  - text: "The government announced new policies regarding environmental protection."
+    cefr: B1
+  - text: "Despite the challenges, the project was completed successfully."
+    cefr: B2
+  - text: "The implications of artificial intelligence on employment remain controversial."
+    cefr: B2
+
+korean:
+  - text: "안녕하세요. 저는 학생입니다."
+    cefr: A1
+  - text: "나는 매일 아침 밥을 먹어요."
+    cefr: A1
+  - text: "이 책은 재미있어요."
+    cefr: A1
+  - text: "어제 친구를 만나서 함께 공부했어요."
+    cefr: A2
+  - text: "집에 가는 길에 가게에 들렸습니다."
+    cefr: A2
+  - text: "이 영화가 그 영화보다 더 재미있다고 생각해요."
+    cefr: B1
+  - text: "환경 보호는 우리 모두의 책임입니다."
+    cefr: B1
+  - text: "기술 발전에도 불구하고 인간관계는 여전히 중요합니다."
+    cefr: B2
+  - text: "국제 무역 협정의 장기적 영향을 고려할 필요가 있습니다."
+    cefr: B2
+
+japanese:
+  - text: "こんにちは。私は田中です。"
+    cefr: A1
+  - text: "毎日学校に行きます。"
+    cefr: A1
+  - text: "これは何ですか。"
+    cefr: A1
+  - text: "昨日、友達と一緒に映画を見ました。"
+    cefr: A2
+  - text: "駅から学校まではバスで15分です。"
+    cefr: A2
+  - text: "このプロジェクトについて、どう思いますか。"
+    cefr: B1
+  - text: "環境問題に対して、私たちは真摯に取り組む必要があります。"
+    cefr: B1
+  - text: "グローバル化により、様々な文化が交差しています。"
+    cefr: B2
+  - text: "急速に変化する社会において、継続的な学習が不可欠です。"
+    cefr: B2
