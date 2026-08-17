@@ -55,3 +55,4 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+lint.ignore = ["B008", "BLE001", "TRY004", "FLY002"]

@@ -37,6 +37,9 @@ def load_sample(path: Path) -> dict:
     payload.setdefault("language", "en")
     payload.setdefault("skill", "writing")
     payload.setdefault("text", "")
+    
+    from nokaman.models.schemas import Sample
+    Sample.model_validate(payload)
     return payload
 
 
@@ -47,6 +50,9 @@ def load_listening_pack(path: Path) -> dict:
     payload.setdefault("skill", "listening")
     payload.setdefault("questions", payload.get("items") or [])
     payload["items"] = list(payload.get("items") or payload.get("questions") or [])
+    
+    from nokaman.models.schemas import ListeningPack
+    ListeningPack.model_validate(payload)
     return payload
 
 
@@ -54,4 +60,7 @@ def load_rubric(path: Path) -> dict:
     payload = load_json(path)
     payload.setdefault("language", path.stem)
     payload.setdefault("skills", {})
+    
+    from nokaman.models.schemas import Rubric
+    Rubric.model_validate(payload)
     return payload
