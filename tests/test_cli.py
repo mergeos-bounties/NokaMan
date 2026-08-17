@@ -20,3 +20,18 @@ def test_eval_batch_writes_nested_output_path(tmp_path) -> None:
     assert report["n_samples"] >= 1
     assert "by_language" in report
     assert "rows" in report
+
+
+def test_score_command(tmp_path) -> None:
+    sample_path = tmp_path / "sample.json"
+    sample_path.write_text(json.dumps({
+        "id": "test_en_1",
+        "language": "en",
+        "skill": "writing",
+        "text": "Hello world"
+    }))
+    result = CliRunner().invoke(app, ["score", "--sample", str(sample_path)])
+    assert result.exit_code == 0, result.output
+    assert "Overview" in result.output
+    assert "Score" in result.output
+    assert "tokens" in result.output

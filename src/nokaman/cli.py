@@ -76,6 +76,39 @@ def stats_cmd() -> None:
     )
 
 
+@app.command("score")
+def score_cmd(
+    sample: Path = typer.Option(
+        ..., "--sample", "-s", exists=True, file_okay=True, dir_okay=False, help="Path to sample JSON"
+    )
+) -> None:
+    """Evaluate a specific sample file and output a rich dimension table."""
+    from nokaman.eval.pipeline import evaluate_sample_file
+
+    result = evaluate_sample_file(sample)
+    table = Table(title=f"Sample: {result.get('sample_id', sample.stem)}")
+    table.add_column("Category")
+    table.add_column("Metric/Dimension")
+    table.add_column("Value")
+
+    table.add_row("Overview", "Language", str(result.get("language_name", result.get("language"))))
+    table.add_row("Overview", "Skill", str(result.get("skill")))
+    table.add_row("Overview", "Score", str(result.get("score")))
+    table.add_row("Overview", "CEFR Band", str(result.get("cefr")))
+
+    # Rubrics provide dimensions, but toy models provide features
+    dimensions = result.get("dimensions", {})
+    features = result.get("features", {})
+
+    for k, v in dimensions.items():
+        table.add_row("Dimension", k, str(v))
+        
+    for k, v in features.items():
+        table.add_row("Feature", k, str(v))
+
+    console.print(table)
+
+
 @app.command("demo")
 def demo_cmd(lang: str = typer.Option("en", "--lang", "-l")) -> None:
     """Full multi-skill demo for a language (end-to-end runnable)."""
