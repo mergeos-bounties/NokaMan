@@ -18,9 +18,9 @@ from typing import Any
 from nokaman.eval.adaptive import (
     CEFR_TARGETS,
     _running_ability,
+    build_prompt_bank,
     estimate_answer_scores,
     select_next_prompt,
-    build_prompt_bank,
 )
 from nokaman.models.cefr import score_to_cefr
 

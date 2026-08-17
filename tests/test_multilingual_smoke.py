@@ -7,7 +7,6 @@ from pathlib import Path
 from nokaman.eval.pipeline import evaluate_sample_file
 from nokaman.rubrics.registry import CEFR_BANDS
 
-
 ROOT = Path(__file__).parent.parent
 FIXTURE = Path(__file__).parent / "fixtures" / "multilingual_smoke_samples.json"
 

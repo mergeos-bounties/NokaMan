@@ -1,0 +1,12 @@
+{
+  "id": "sample_en_writing_b1_cohesion_001",
+  "language": "en",
+  "skill": "writing",
+  "band": "B1",
+  "text": "The weather was beautiful today. Therefore, we decided to go to the park. We walked around the lake for a while. However, it started raining unexpectedly. Because of the rain, we had to run back home. Nonetheless, we had a good time.",
+  "metadata": {
+    "topic": "weekend activity",
+    "prompt": "Write about your weekend activity.",
+    "learner_id": "test_user_789"
+  }
+}

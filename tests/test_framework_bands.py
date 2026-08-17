@@ -1,5 +1,5 @@
-from nokaman.models.toy import ToyAbilityModel
 from nokaman.eval.pipeline import evaluate_demo
+from nokaman.models.toy import ToyAbilityModel
 
 
 def test_en_framework_bands() -> None:

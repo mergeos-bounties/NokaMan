@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -11,7 +10,7 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
+from nokaman.data.loader import list_rubric_files, list_sample_files, load_rubric
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
@@ -130,7 +129,7 @@ def languages_coverage(json_output: bool = typer.Option(False, "--json")) -> Non
 
 
 @rubrics_app.command("list")
-def rubrics_list(lang: Optional[str] = typer.Option(None, "--lang", "-l")) -> None:
+def rubrics_list(lang: str | None = typer.Option(None, "--lang", "-l")) -> None:
     files = list_rubric_files()
     if lang:
         files = [p for p in files if p.stem == lang.strip().lower()]
@@ -193,8 +192,8 @@ def rubrics_explain(
 @eval_app.command("text")
 def eval_text(
     lang: str = typer.Option("en", "--lang", "-l"),
-    text: Optional[str] = typer.Option(None, "--text", "-t"),
-    file: Optional[Path] = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
+    text: str | None = typer.Option(None, "--text", "-t"),
+    file: Path | None = typer.Option(None, "--file", "-f", exists=True, dir_okay=False),
     skill: str = typer.Option("writing", "--skill", "-s"),
 ) -> None:
     if file is not None:
@@ -238,7 +237,7 @@ def eval_samples() -> None:
 
 @eval_app.command("batch")
 def eval_batch(
-    out: Optional[Path] = typer.Option(None, "--out", "-o"),
+    out: Path | None = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
 ) -> None:
     report = batch_evaluate()

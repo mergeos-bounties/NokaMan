@@ -6,6 +6,8 @@
 
 ## ✅ 已完成
 
+- Added offline writing rubric with cohesion/coherence dimensions.
+- Added test sample and unit tests for the writing rubric.
 - Added `CONTRIBUTING.md` for bounty #18 with setup, tests, good-first-issue path, and MergeOS claim flow.
 - Added README links to the contribution guide.
 - Harness initialized for NokaMan bounty #11.

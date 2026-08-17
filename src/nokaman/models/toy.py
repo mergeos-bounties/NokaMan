@@ -39,7 +39,7 @@ class ToyAbilityModel:
                 r"\b(because|although|however|therefore|while|when|if|and|but|so|"
                 r"vì|nhưng|tuy|mặc dù|그래서|하지만|ので|けど|因为|但是)\b",
                 text,
-                flags=re.I,
+                flags=re.IGNORECASE,
             )
         )
         connector_score = min(15.0, connectors * 3.5)
@@ -167,7 +167,7 @@ def _script_bonus(text: str, language: str) -> float:
     if language == "en" and re.search(r"[A-Za-z]", text):
         return 4.0
     if language == "vi" and re.search(
-        r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", text, re.I
+        r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", text, re.IGNORECASE
     ):
         return 6.0
     return 0.0

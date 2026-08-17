@@ -18,14 +18,7 @@ def test_train_toy_loads_yaml_config_and_dashboard(tmp_path: Path, monkeypatch) 
     monkeypatch.setattr(toy_train_mod, "RUNS_DIR", tmp_path / "runs")
     config_path = tmp_path / "calibration.yaml"
     config_path.write_text(
-        "\n".join(
-            [
-                "run_id: smoke-calibration",
-                "epochs: 2",
-                "seed: 123",
-                "resume: true",
-            ]
-        ),
+        "run_id: smoke-calibration\nepochs: 2\nseed: 123\nresume: true",
         encoding="utf-8",
     )
 

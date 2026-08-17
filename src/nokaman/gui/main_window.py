@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QSize, QThread, Signal
+from PySide6.QtCore import QSize, Qt, QThread, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
@@ -82,7 +82,7 @@ class TrainWorker(QThread):
         try:
             report = train_toy(epochs=self.epochs)
             self.finished_ok.emit(report)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self.failed.emit(str(exc))
 
 
@@ -235,7 +235,7 @@ class MainWindow(QMainWindow):
             self._append_demo("Demo complete — offline multi-skill assessment works.")
             self._status(f"Demo complete · {lang} · CEFR {result.get('cefr')}")
             self.refresh_samples()
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self._append_demo(f"Error: {exc}")
             QMessageBox.warning(self, "NokaMan", str(exc))
         finally:
@@ -353,7 +353,7 @@ class MainWindow(QMainWindow):
             self._status(
                 f"Eval done · CEFR {cefr} · score={result.get('score') or result.get('overall')}"
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self.eval_out.setPlainText(f"Error: {exc}")
 
     # ----- Samples -----
@@ -405,7 +405,7 @@ class MainWindow(QMainWindow):
                     str(result.get("cefr", "")),
                     str(result.get("score", "")),
                 ]
-            except Exception:  # noqa: BLE001
+            except Exception:
                 sample = load_sample(path)
                 vals = [
                     path.name,
@@ -440,7 +440,7 @@ class MainWindow(QMainWindow):
             self.batch_out.setPlainText(json.dumps(summary, indent=2))
             self._status(f"Batch · n={report['n_samples']} exact={report['exact_cefr_hit_rate']}")
             self.refresh_samples()
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self.batch_out.setPlainText(f"Error: {exc}")
 
     # ----- Rubrics -----
@@ -480,7 +480,7 @@ class MainWindow(QMainWindow):
         try:
             data = load_rubric(path)
             self.rubric_detail.setPlainText(json.dumps(data, indent=2, ensure_ascii=False))
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self.rubric_detail.setPlainText(f"Error: {exc}")
 
     # ----- Train -----
