@@ -1,145 +1,160 @@
-"""Optional remote LLM grader behind a flag.
-
-Default remains the local ToyAbilityModel.
-When ENABLE_LLM_GRADER=true and LLM_API_KEY / LLM_ENDPOINT are set,
-the remote grader is used instead.
-
-Uses only stdlib (urllib) — no new pip dependencies.
-"""
-
 from __future__ import annotations
 
-import json
 import os
-import urllib.error
-import urllib.request
-from typing import Any
+from typing import Optional
 
+try:
+    import httpx
+    HTTPX_AVAILABLE = True
+except ImportError:
+    HTTPX_AVAILABLE = False
+
+from nokaman.rubrics.registry import load_language_rubric
 from nokaman.models.toy import ToyAbilityModel
-
-_ENABLED_VAR = "ENABLE_LLM_GRADER"
-_API_KEY_VAR = "LLM_API_KEY"
-_ENDPOINT_VAR = "LLM_ENDPOINT"
-_MODEL_VAR = "LLM_MODEL"
-
-_DEFAULT_ENDPOINT = "https://api.openai.com/v1/chat/completions"
-_DEFAULT_MODEL = "gpt-4o-mini"
-
-SYSTEM_PROMPT = """You are a language assessment grader. Score the user's response on a scale of 0-100.
-
-Consider: grammatical accuracy, vocabulary range, coherence, task completion, and complexity.
-Respond with ONLY a JSON object:
-{
-  "score": <0-100>,
-  "cefr": "<A1|A2|B1|B2|C1|C2>",
-  "feedback": "<1-2 sentence qualitative feedback>"
-}"""
 
 
 def _is_enabled() -> bool:
-    return os.environ.get(_ENABLED_VAR, "").strip().lower() in ("true", "1", "yes")
+    """Check if LLM grader is enabled via environment variable."""
+    val = os.getenv("ENABLE_LLM_GRADER", "").strip().lower()
+    return val in ("true", "1", "yes", "on")
 
 
-def _api_key() -> str | None:
-    return os.environ.get(_API_KEY_VAR) or None
+class LLMRubricGrader:
+    """
+    Optional LLM-based rubric grader (httpx extra).
+    
+    Uses an LLM API to score text against rubric criteria.
+    Falls back to heuristic grader if API unavailable.
+    
+    Requires: pip install httpx
+    Set environment variable: ENABLE_LLM_GRADER=true, LLM_API_KEY, LLM_API_URL
+    """
 
-
-def _endpoint() -> str:
-    return (os.environ.get(_ENDPOINT_VAR) or _DEFAULT_ENDPOINT).rstrip("/")
-
-
-def _model() -> str:
-    return os.environ.get(_MODEL_VAR) or _DEFAULT_MODEL
-
-
-class LLMGrader:
-    """Remote LLM-based grader. Falls back to ToyAbilityModel if disabled or on error."""
-
-    def __init__(self, language: str = "en") -> None:
+    def __init__(
+        self,
+        language: str = "en",
+        api_key: Optional[str] = None,
+        api_url: Optional[str] = None,
+        model: str = "gpt-4o-mini",
+    ):
         self.language = language.strip().lower()
-        self._toy = ToyAbilityModel(language=self.language)
+        self.rubric = load_language_rubric(self.language)
+        self.toy_model = ToyAbilityModel(language=self.language)
+        self.api_key = api_key or os.getenv("LLM_API_KEY")
+        self.api_url = api_url or os.getenv("LLM_API_URL", "https://api.openai.com/v1/chat/completions")
+        self.model = model
+        self.enabled = _is_enabled() and HTTPX_AVAILABLE
 
-    def score_text(self, text: str, skill: str = "writing") -> dict[str, Any]:
-        if not _is_enabled():
-            return self._toy.score_text(text, skill=skill)
+    def is_available(self) -> bool:
+        return self.enabled
 
-        key = _api_key()
-        if not key:
-            return self._fallback(text, skill, reason="LLM_API_KEY not set")
+    def score_text(self, text: str, skill: str = "writing") -> dict:
+        """Score text using LLM against rubric, fallback to Toy model."""
+        if not self.enabled or not text.strip():
+            result = self.toy_model.score_text(text, skill=skill)
+            if self.enabled and not self.api_key:
+                result["llm_fallback_reason"] = "LLM_API_KEY not set"
+            elif self.enabled and not HTTPX_AVAILABLE:
+                result["llm_fallback_reason"] = "httpx not installed"
+            return result
+
+        # Enabled but no API key - fallback with reason
+        if not self.api_key:
+            result = self.toy_model.score_text(text, skill=skill)
+            result["llm_fallback_reason"] = "LLM_API_KEY not set"
+            return result
+
+        skill_rubric = (self.rubric.get("skills") or {}).get(skill, {})
+        criteria = skill_rubric.get("criteria", [])
+        band_descriptors = self.rubric.get("bands", [])
+
+        prompt = self._build_prompt(text, skill, criteria, band_descriptors)
 
         try:
-            return self._call_llm(text, skill, key)
-        except Exception as exc:
-            return self._fallback(text, skill, reason=str(exc))
-
-    def score_multi_skill(self, text: str, skills: list[str] | None = None) -> dict[str, Any]:
-        if not _is_enabled():
-            return self._toy.score_multi_skill(text, skills=skills)
-        # For multi-skill, fallback to toy since LLM per-skill calls are expensive
-        return self._toy.score_multi_skill(text, skills=skills)
-
-    # ── internal ───────────────────────────────────────────────
-
-    def _call_llm(self, text: str, skill: str, api_key: str) -> dict[str, Any]:
-        if not text.strip():
-            return self._toy.score_text(text, skill=skill)
-
-        prompt = (
-            f"Language: {self.language}\nSkill being assessed: {skill}\nLearner response:\n{text}"
-        )
-        payload = json.dumps(
-            {
-                "model": _model(),
+            import httpx
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "model": self.model,
                 "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": "You are an expert language assessor. Score the text against the provided rubric and return ONLY valid JSON."},
                     {"role": "user", "content": prompt},
                 ],
-                "temperature": 0.2,
-                "max_tokens": 200,
+                "temperature": 0.1,
+                "max_tokens": 500,
             }
-        ).encode("utf-8")
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(self.api_url, headers=headers, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                content = data["choices"][0]["message"]["content"]
+                return self._parse_response(content)
+        except Exception as e:
+            result = self.toy_model.score_text(text, skill=skill)
+            result["llm_fallback_reason"] = f"LLM grading failed: {e}"
+            return result
 
-        req = urllib.request.Request(
-            f"{_endpoint()}",
-            data=payload,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-            },
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
+    def score_multi_skill(self, text: str, skills: list[str] | None = None) -> dict:
+        """Score multiple skills using LLM or fallback."""
+        if not self.enabled or not text.strip():
+            return self.toy_model.score_multi_skill(text, skills)
+        # For multi-skill, just use toy for now (LLM would need multiple calls)
+        return self.toy_model.score_multi_skill(text, skills)
 
-        content = body["choices"][0]["message"]["content"]
-        # Parse JSON from response (handle wrapped in markdown fences)
-        content_clean = content.strip()
-        if content_clean.startswith("```"):
-            content_clean = content_clean.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-        parsed = json.loads(content_clean)
+    def _build_prompt(self, text: str, skill: str, criteria: list, bands: list) -> str:
+        criteria_text = "\n".join(f"- {c}" for c in criteria) if criteria else "No specific criteria defined."
+        bands_text = ", ".join(bands) if bands else "A1, A2, B1, B2, C1, C2"
 
-        score = float(parsed.get("score", 50))
-        cefr = str(parsed.get("cefr", "B1")).upper()
-        feedback = str(parsed.get("feedback", ""))
+        return f"""
+Language: {self.language}
+Skill: {skill}
+Bands: {bands_text}
+Criteria:
+{criteria_text}
 
-        # Ensure valid CEFR
-        valid_cefr = {"A1", "A2", "B1", "B2", "C1", "C2"}
-        if cefr not in valid_cefr:
-            from nokaman.models.cefr import score_to_cefr
+Text to assess:
+\"\"\"
+{text}
+\"\"\"
 
-            cefr = score_to_cefr(score)
+Return a JSON object with:
+{{
+  "score": 0-100,
+  "cefr": "A1|A2|B1|B2|C1|C2",
+  "criteria_scores": {{"criterion_name": score_0_100, ...}},
+  "feedback": "brief feedback",
+  "confidence": 0.0-1.0
+}}
+"""
 
-        return {
-            "language": self.language,
-            "skill": skill,
-            "score": round(score, 2),
-            "cefr": cefr,
-            "feedback": feedback,
-            "model": f"LLMGrader({_model()})",
-            "features": {"tokens": len(text.split())},
-        }
+    def _parse_response(self, content: str) -> dict:
+        import json
+        try:
+            # Try to extract JSON from response
+            start = content.find("{")
+            end = content.rfind("}") + 1
+            if start >= 0 and end > start:
+                data = json.loads(content[start:end])
+            else:
+                data = json.loads(content)
+            # Validate and clamp
+            data["score"] = max(0, min(100, float(data.get("score", 0))))
+            data["cefr"] = str(data.get("cefr", "A1")).upper()
+            data["confidence"] = max(0.0, min(1.0, float(data.get("confidence", 0.5))))
+            data["model"] = "LLMRubricGrader"
+            return data
+        except Exception:
+            result = self.toy_model.score_text("", skill="writing")
+            result["llm_fallback_reason"] = "Failed to parse LLM response"
+            return result
 
-    def _fallback(self, text: str, skill: str, reason: str = "") -> dict[str, Any]:
-        result = self._toy.score_text(text, skill=skill)
-        result["llm_fallback_reason"] = reason
-        return result
+
+# Backward compatibility alias
+LLMGrader = LLMRubricGrader
+
+
+def create_llm_grader(language: str = "en", **kwargs) -> LLMRubricGrader:
+    """Factory function to create LLM grader."""
+    return LLMRubricGrader(language=language, **kwargs)

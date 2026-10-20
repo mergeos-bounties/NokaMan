@@ -13,6 +13,7 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
     exact = 0
     adjacent = 0
     labeled = 0
+    score_diffs = []  # For MAE calculation
     for path in files:
         sample = load_sample(path)
         result = evaluate_sample_file(path)
@@ -35,6 +36,10 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
                 adjacent += 1
             elif dist == 1:
                 adjacent += 1
+        # MAE on score (if expected score available)
+        expected_score = sample.get("expected_score")
+        if expected_score is not None and result.get("score") is not None:
+            score_diffs.append(abs(result["score"] - float(expected_score)))
         rows.append(row)
     by_language: dict[str, dict] = {}
     for row in rows:
@@ -53,11 +58,13 @@ def batch_evaluate(sample_dir: Path | None = None) -> dict:
         lab = bucket["labeled"] or 0
         bucket["exact_cefr_hit_rate"] = round(bucket["exact"] / lab, 4) if lab else None
         bucket["adjacent_cefr_hit_rate"] = round(bucket["adjacent"] / lab, 4) if lab else None
+    mae_score = round(sum(score_diffs) / len(score_diffs), 4) if score_diffs else None
     return {
         "n_samples": len(files),
         "n_labeled": labeled,
         "exact_cefr_hit_rate": round(exact / labeled, 4) if labeled else None,
         "adjacent_cefr_hit_rate": round(adjacent / labeled, 4) if labeled else None,
+        "mae_score": mae_score,
         "by_language": by_language,
         "rows": rows,
     }

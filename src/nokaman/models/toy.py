@@ -48,18 +48,42 @@ class ToyAbilityModel:
         sent_len = n / sentences
         sentence_balance = 100.0 - min(40.0, abs(sent_len - 12) * 2.5)
 
+        # ---- Enhanced writing features (#5) ----
+        # Cohesion: pronoun reference density, lexical chains
+        pronouns = len(re.findall(r"\b(he|she|it|they|we|you|i|him|her|them|us|my|your|his|her|its|our|their)\b", text, flags=re.I))
+        cohesion_score = min(10.0, pronouns * 1.2)
+
+        # Grammar error proxies: common error patterns
+        # Run-on sentences (too many commas without conjunctions)
+        commas = text.count(',')
+        run_on_penalty = min(15.0, max(0.0, (commas - 3) * 2.0)) if n < 20 else 0.0
+        # Sentence fragments (capitalized fragments without verb)
+        fragments = len(re.findall(r'\.\s+[A-Z][a-z]+\s+(?:and|but|or|so|because|although|however|while|when|if)\b', text))
+        fragment_penalty = min(10.0, fragments * 3.0)
+        # Subject-verb agreement proxy (simple heuristic)
+        agreement_errors = len(re.findall(r'\b(he|she|it)\s+(are|were|have|do)\b|\b(they|we|you)\s+(is|was|has|does)\b', text, flags=re.I))
+        agreement_penalty = min(10.0, agreement_errors * 4.0)
+        grammar_penalty = run_on_penalty + fragment_penalty + agreement_penalty
+
+        # Length norms: expected tokens per CEFR band
+        # A1: ~20, A2: ~40, B1: ~70, B2: ~110, C1: ~160, C2: ~230
+        length_norms = {0: 20, 1: 40, 2: 70, 3: 110, 4: 160, 5: 230}
+        length_score_norm = min(100.0, (n / 230.0) * 100.0)  # normalized to C2 target
+
         # Language-aware soft prior (script density)
         script_bonus = _script_bonus(text, self.language)
 
         base = (
-            0.28 * length_score
-            + 0.22 * diversity
-            + 0.18 * complexity
-            + 0.10 * punct
-            + 0.12 * connector_score
-            + 0.10 * sentence_balance
+            0.25 * length_score_norm
+            + 0.20 * diversity
+            + 0.15 * complexity
+            + 0.08 * punct
+            + 0.10 * connector_score
+            + 0.08 * sentence_balance
+            + 0.05 * cohesion_score
+            - 0.09 * grammar_penalty
         )
-        base = min(100.0, base + script_bonus)
+        base = min(100.0, max(0.0, base + script_bonus))
 
         # Skill tilt
         skill_weights = {
@@ -87,6 +111,14 @@ class ToyAbilityModel:
                 "script_bonus": round(script_bonus, 2),
                 "connectors": connectors,
                 "sentences": sentences,
+                "cohesion_proxies": pronouns,
+                "grammar_proxies": {
+                    "run_on_penalty": round(run_on_penalty, 2),
+                    "fragment_penalty": round(fragment_penalty, 2),
+                    "agreement_penalty": round(agreement_penalty, 2),
+                    "total_penalty": round(grammar_penalty, 2),
+                },
+                "length_norm_score": round(length_score_norm, 2),
             },
             "model": "ToyAbilityModel",
         }

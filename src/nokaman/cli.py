@@ -15,6 +15,8 @@ from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubri
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
+from nokaman.eval.asr_scorer import score_asr_transcript, score_asr_transcript_text
+from nokaman.eval.llm_grader import create_llm_grader, LLMRubricGrader
 from nokaman.rubrics.registry import (
     SKILLS,
     SUPPORTED_LANGUAGES,
@@ -213,18 +215,41 @@ def eval_demo(lang: str = typer.Option("en", "--lang", "-l")) -> None:
 
 
 @eval_app.command("samples")
-def eval_samples() -> None:
+def eval_samples(
+    language: Optional[str] = typer.Option(None, "--language", "-l", help="Filter by language code (e.g., en, de)"),
+    skill: Optional[str] = typer.Option(None, "--skill", "-s", help="Filter by skill (e.g., writing, speaking)"),
+) -> None:
+    """List samples with optional language and skill filters."""
     files = list_sample_files()
     if not files:
         console.print("[yellow]No samples[/yellow]")
         raise typer.Exit()
-    table = Table(title=f"Samples ({len(files)})")
+
+    filtered_files = []
+    for path in files:
+        from nokaman.data.loader import load_sample
+        sample = load_sample(path)
+        sample_lang = str(sample.get("language") or "").lower()
+        sample_skill = str(sample.get("skill") or "").lower()
+
+        if language and sample_lang != language.lower():
+            continue
+        if skill and sample_skill != skill.lower():
+            continue
+
+        filtered_files.append(path)
+
+    if not filtered_files:
+        console.print(f"[yellow]No samples matching filters (language={language}, skill={skill})[/yellow]")
+        raise typer.Exit()
+
+    table = Table(title=f"Samples ({len(filtered_files)})")
     table.add_column("File")
     table.add_column("Lang")
     table.add_column("Skill")
     table.add_column("CEFR")
     table.add_column("Score")
-    for path in files:
+    for path in filtered_files:
         result = evaluate_sample_file(path)
         table.add_row(
             path.name,
@@ -240,11 +265,47 @@ def eval_samples() -> None:
 def eval_batch(
     out: Optional[Path] = typer.Option(None, "--out", "-o"),
     table: bool = typer.Option(True, "--table/--json-only"),
+    format: str = typer.Option("json", "--format", "-f", help="Output format: json, csv"),
 ) -> None:
     report = batch_evaluate()
-    out_path = out or (RUNS_DIR / "batch_eval.json")
+
+    # Determine output path and format
+    if out:
+        out_path = out
+    else:
+        ext = "csv" if format == "csv" else "json"
+        out_path = RUNS_DIR / f"batch_eval.{ext}"
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+    if format == "csv":
+        # Write CSV format
+        import csv
+        with open(out_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            # Header
+            writer.writerow(["language", "n_samples", "exact_cefr_hit_rate", "adjacent_cefr_hit_rate", "mae_score"])
+            # Overall
+            writer.writerow([
+                "overall",
+                report.get("n_samples", 0),
+                report.get("exact_cefr_hit_rate", ""),
+                report.get("adjacent_cefr_hit_rate", ""),
+                report.get("mae_score", ""),
+            ])
+            # By language
+            for lang, row in sorted((report.get("by_language") or {}).items()):
+                writer.writerow([
+                    lang,
+                    row.get("n") or row.get("n_samples") or "",
+                    row.get("exact_cefr_hit_rate", row.get("exact", "")),
+                    row.get("adjacent_cefr_hit_rate", row.get("adjacent", "")),
+                    row.get("mae_score", ""),
+                ])
+        console.print(f"[green]CSV report saved[/green]: {out_path}")
+    else:
+        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
     console.print(
         f"[green]batch[/green] n={report['n_samples']} exact={report['exact_cefr_hit_rate']} "
         f"adjacent={report['adjacent_cefr_hit_rate']}"
@@ -293,6 +354,48 @@ def eval_placement(
     answer: list[str] = typer.Option(..., "--answer", "-a", help="Repeat for multiple answers"),
 ) -> None:
     result = placement_test(lang, answer)
+    _print_json(data=result)
+
+
+@eval_app.command("asr")
+def eval_asr(
+    transcript: Path = typer.Option(..., "--transcript", "-t", exists=True, dir_okay=False, help="ASR transcript JSON file"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+    skill: str = typer.Option("speaking", "--skill", "-s"),
+) -> None:
+    """Score speaking from ASR transcript JSON file."""
+    result = score_asr_transcript(transcript, lang, skill)
+    _print_json(data=result)
+
+
+@eval_app.command("asr-text")
+def eval_asr_text(
+    text: str = typer.Option(..., "--text", help="Transcript text"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+    duration: float = typer.Option(0.0, "--duration", "-d", help="Duration in seconds"),
+    confidence: float = typer.Option(1.0, "--confidence", "-c", help="ASR confidence 0-1"),
+) -> None:
+    """Score speaking from raw transcript text."""
+    result = score_asr_transcript_text(text, lang, duration, confidence)
+    _print_json(data=result)
+
+
+@eval_app.command("llm-grade")
+def eval_llm_grade(
+    text: str = typer.Option(..., "--text", "-t", help="Text to grade"),
+    lang: str = typer.Option("en", "--lang", "-l"),
+    skill: str = typer.Option("writing", "--skill", "-s"),
+    api_key: Optional[str] = typer.Option(None, "--api-key", help="LLM API key (or set LLM_API_KEY)"),
+    api_url: Optional[str] = typer.Option(None, "--api-url", help="LLM API URL"),
+    model: str = typer.Option("gpt-4o-mini", "--model", help="LLM model name"),
+) -> None:
+    """Grade text using optional LLM rubric grader (requires httpx extra)."""
+    grader = LLMRubricGrader(language=lang, api_key=api_key, api_url=api_url, model=model)
+    if not grader.is_available():
+        console.print("[red]LLM grader not available. Install httpx: pip install httpx[/red]")
+        console.print("[dim]Set ENABLE_LLM_GRADER=true and LLM_API_KEY env vars[/dim]")
+        raise typer.Exit(code=1)
+    result = grader.score_text(text, skill)
     _print_json(data=result)
 
 
