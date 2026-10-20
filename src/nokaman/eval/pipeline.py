@@ -29,6 +29,7 @@ def evaluate_sample_file(path: Path) -> dict:
         result["band_check"] = compare_bands(result["cefr"], str(expected))
     result["sample_id"] = sample.get("id")
     result["source"] = str(path)
+    result["expected_cefr"] = expected
     return result
 
 

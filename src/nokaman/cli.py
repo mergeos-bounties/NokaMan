@@ -11,7 +11,7 @@ from rich.table import Table
 from nokaman import __version__
 from nokaman.config import OUT_DIR, RUNS_DIR
 from nokaman.data.coverage import language_skill_coverage
-from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric
+from nokaman.data.loader import list_sample_files, list_rubric_files, load_rubric, load_sample
 from nokaman.eval.metrics import batch_evaluate, placement_test
 from nokaman.eval.pipeline import evaluate_demo, evaluate_sample_file, evaluate_text
 from nokaman.eval.session import SessionManager
@@ -21,7 +21,7 @@ from nokaman.rubrics.registry import (
     get_language_meta,
     load_language_rubric,
 )
-from nokaman.train.toy_train import train_toy
+from nokaman.models.toy import ToyAbilityModel
 
 app = typer.Typer(
     help="NokaMan — multi-language learning ability assessment (runnable).",
@@ -294,6 +294,59 @@ def eval_placement(
 ) -> None:
     result = placement_test(lang, answer)
     _print_json(data=result)
+
+
+@app.command("score")
+def score_cmd(
+    sample: Path = typer.Option(..., "--sample", "-s", exists=True, dir_okay=False, help="Path to sample JSON file"),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON instead of table"),
+) -> None:
+    """Score a single sample file and display rich table with results."""
+    result = evaluate_sample_file(sample)
+
+    if json_output:
+        _print_json(data=result)
+        return
+
+    # Build rich table
+    table = Table(title=f"Score Report: {sample.name}")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="white")
+
+    table.add_row("Sample ID", str(result.get("sample_id", "—")))
+    table.add_row("Source", str(result.get("source", "—")))
+    table.add_row("Language", str(result.get("language", "—")))
+    table.add_row("Language Name", str(result.get("language_name", "—")))
+    table.add_row("Skill", str(result.get("skill", "—")))
+    table.add_row("Score", f"{result.get('score', 0):.2f}")
+    table.add_row("CEFR", str(result.get("cefr", "—")))
+    table.add_row("Expected CEFR", str(result.get("expected_cefr", "—")))
+    band_check = result.get("band_check")
+    if band_check:
+        table.add_row("Band Check", "match" if band_check.get("match") else "mismatch")
+        table.add_row("Band Delta", str(band_check.get("delta", "-")))
+
+    console.print(table)
+
+    # Framework bands
+    framework_bands = result.get("framework_bands") or {}
+    if framework_bands:
+        fb_table = Table(title="Framework Bands")
+        fb_table.add_column("Framework", style="cyan")
+        fb_table.add_column("Band", style="white")
+        for k, v in framework_bands.items():
+            fb_table.add_row(k, str(v))
+        console.print(fb_table)
+
+    # Features
+    features = result.get("features") or {}
+    if features:
+        feat_table = Table(title="Features")
+        feat_table.add_column("Feature", style="cyan")
+        feat_table.add_column("Value", style="white")
+        for k, v in features.items():
+            feat_table.add_row(k, str(v))
+        console.print(feat_table)
 
 
 @train_app.command("toy")
